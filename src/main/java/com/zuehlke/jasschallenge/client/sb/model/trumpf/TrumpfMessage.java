@@ -2,7 +2,7 @@ package com.zuehlke.jasschallenge.client.sb.model.trumpf;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.annotations.SerializedName;
-import com.zuehlke.jasschallenge.client.sb.model.card.Suit;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 
 public class TrumpfMessage {
 

@@ -1,9 +1,10 @@
-package com.zuehlke.jasschallenge.client.sb.jasslogic;
+package com.zuehlke.jasschallenge.client.sb.game;
 
-import com.zuehlke.jasschallenge.client.sb.game.GameState;
-import com.zuehlke.jasschallenge.client.sb.model.card.CardNumber;
-import com.zuehlke.jasschallenge.client.sb.model.card.Card;
-import com.zuehlke.jasschallenge.client.sb.model.card.Suit;
+import com.zuehlke.jasschallenge.client.sb.jasslogic.CardsOnTableTestDataFactory;
+import com.zuehlke.jasschallenge.client.sb.jasslogic.MyCardsTestDataFactory;
+import com.zuehlke.jasschallenge.client.sb.model.cards.CardNumber;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfSuit;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfUndeufe;
 import org.junit.Assert;
@@ -68,21 +69,6 @@ public class GameStateTest {
         Assert.assertEquals(1, allowedCardsToPlay.size());
         Set<Card> expectedAllowedCardsToPlay = new HashSet<>(Arrays.asList(new Card[]{new Card(Suit.HEARTS, CardNumber.valueOf(11))}));
         Assert.assertEquals(expectedAllowedCardsToPlay, allowedCardsToPlay);
-    }
-
-    @Test
-    public void getSafeTricks_threeNonTrumpfsOnTable_iHaveATrumpf_thisTrumpfIsReturned() {
-        GameState gameState = new GameState();
-        gameState.setMyCards(myCardsFactory.createMyCardsOneHeartThreeSpadesOneClubs());
-        gameState.setCardsOnTable(cardsOnTableFactory.createCardsOnTableThreeSpades());
-        gameState.setTrumpf(new TrumpfSuit(Suit.HEARTS));
-        gameState.setIMadeTrumpf(false);
-        gameState.setRound(4);
-
-        Card[] safeTricks = gameState.getSafeTricks().toArray(Card[]::new);
-
-        Assert.assertEquals(1, safeTricks.length);
-        Assert.assertEquals(new Card(Suit.HEARTS, CardNumber.valueOf(10)), safeTricks[0]);
     }
 
     @Test

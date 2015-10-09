@@ -1,6 +1,6 @@
 package com.zuehlke.jasschallenge.client.sb.model;
 
-import com.zuehlke.jasschallenge.client.sb.model.card.Card;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 
 import java.util.Arrays;
 

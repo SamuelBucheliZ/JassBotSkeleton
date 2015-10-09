@@ -1,8 +1,5 @@
-package com.zuehlke.jasschallenge.client.sb.model;
+package com.zuehlke.jasschallenge.client.sb.model.cards;
 
-import com.zuehlke.jasschallenge.client.sb.model.card.CardNumber;
-import com.zuehlke.jasschallenge.client.sb.model.card.Card;
-import com.zuehlke.jasschallenge.client.sb.model.card.Suit;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfObeabe;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfSuit;

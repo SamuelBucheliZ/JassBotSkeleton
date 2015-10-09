@@ -1,7 +1,7 @@
 package com.zuehlke.jasschallenge.client.sb.jasslogic.strategy;
 
 import com.zuehlke.jasschallenge.client.sb.game.GameState;
-import com.zuehlke.jasschallenge.client.sb.model.card.Card;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 
 import java.util.Set;

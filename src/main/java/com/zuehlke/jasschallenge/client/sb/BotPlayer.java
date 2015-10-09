@@ -1,5 +1,7 @@
 package com.zuehlke.jasschallenge.client.sb;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import com.zuehlke.jasschallenge.client.sb.game.Game;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.Strategy;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.TrivialStrategy;
@@ -17,15 +19,17 @@ import java.util.concurrent.CountDownLatch;
  * One Jass player. This program can simulate multiple players.
  */
 public class BotPlayer {
+    private static final Config conf = ConfigFactory.load().getConfig("bot-player");
+    private static final String SERVER_URI = conf.getString("SERVER_URI");
+    private static final String SESSION_NAME = conf.getString("SESSION_NAME");
+    private static final String BOT_NAME_PREFIX = conf.getString("BOT_NAME_PREFIX");
 
     private Logger logger = Logger.getLogger(this.getClass());
-    private static final String SERVER_URI = "wss://jasschallenge.herokuapp.com";
-    private static final String SESSION_NAME = "showdown";
-    private static final String BOT_NAME = "sb";
+
 
     public BotPlayer(CountDownLatch countDown, int playerID) {
-        //String playerName = BOT_NAME + playerID + ":" + UUID.randomUUID().hashCode();
-        String playerName = BOT_NAME + playerID;
+        //String playerName = BOT_NAME_PREFIX + playerID + ":" + UUID.randomUUID().hashCode();
+        String playerName = BOT_NAME_PREFIX + playerID;
         logger.info("Creating bot player " + playerName + " for session " + SESSION_NAME);
 
         Strategy strategy = new TrivialStrategy();

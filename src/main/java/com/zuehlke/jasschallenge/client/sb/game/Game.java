@@ -4,7 +4,7 @@ import com.zuehlke.jasschallenge.client.sb.model.Stich;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.Strategy;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 
-import com.zuehlke.jasschallenge.client.sb.model.card.Card;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfMode;
 import org.apache.log4j.Logger;
 
@@ -49,7 +49,6 @@ public class Game {
 
     public Trumpf requestTrumpf() {
         Trumpf trumpf = strategy.onRequestTrumpf(gameState.getMyCards());
-        //Trumpf trumpf = new TrumpfChooser().requestTrumpf(gameState.getMyCards());
         if (!trumpf.getMode().equals(TrumpfMode.SCHIEBE)) {
             gameState.setIMadeTrumpf(true);
         }
@@ -59,7 +58,6 @@ public class Game {
     public Card requestCard(List<Card> cardsOnTable) {
         gameState.setCardsOnTable(cardsOnTable);
         Card card = strategy.onRequestCard(gameState);
-        //Card card = cardChooser.chooseCard(gameState);
         gameState.getMyCards().remove(card);
         return card;
     }
@@ -88,5 +86,4 @@ public class Game {
     public String getSessionName() {
         return sessionName;
     }
-
 }

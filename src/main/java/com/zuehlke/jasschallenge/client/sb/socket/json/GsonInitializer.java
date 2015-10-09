@@ -2,7 +2,7 @@ package com.zuehlke.jasschallenge.client.sb.socket.json;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.zuehlke.jasschallenge.client.sb.model.card.Card;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.socket.messages.Message;
 
 public class GsonInitializer {

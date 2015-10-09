@@ -1,4 +1,4 @@
-package com.zuehlke.jasschallenge.client.sb.model.card;
+package com.zuehlke.jasschallenge.client.sb.model.cards;
 
 import java.util.HashMap;
 import java.util.Map;

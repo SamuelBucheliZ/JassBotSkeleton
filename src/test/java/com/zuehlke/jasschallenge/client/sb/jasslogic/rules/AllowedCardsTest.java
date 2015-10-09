@@ -1,10 +1,12 @@
-package com.zuehlke.jasschallenge.client.sb.jasslogic;
+package com.zuehlke.jasschallenge.client.sb.jasslogic.rules;
 
 import com.zuehlke.jasschallenge.client.sb.game.GameState;
-import com.zuehlke.jasschallenge.client.sb.model.card.Card;
-import com.zuehlke.jasschallenge.client.sb.model.card.CardNumber;
+import com.zuehlke.jasschallenge.client.sb.jasslogic.CardsOnTableTestDataFactory;
+import com.zuehlke.jasschallenge.client.sb.jasslogic.MyCardsTestDataFactory;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
+import com.zuehlke.jasschallenge.client.sb.model.cards.CardNumber;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
-import com.zuehlke.jasschallenge.client.sb.model.card.Suit;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfSuit;
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,39 +15,36 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
-public class CardChooserTest {
+public class AllowedCardsTest {
 
     private MyCardsTestDataFactory myCardsFactory = new MyCardsTestDataFactory();
     private CardsOnTableTestDataFactory cardsOnTableFactory = new CardsOnTableTestDataFactory();
-    private CardChooser cardChooser = new CardChooser();
 
     @Test
-    public void noCardsOnTable_playFirstCardOfList() {
+    public void noCardsOnTable_playAnyCard() {
         GameState gameState = new GameState();
         gameState.setMyCards(createMyCards());
         gameState.setCardsOnTable(createCardsOnTableEmpty());
         gameState.setTrumpf(new TrumpfSuit(Suit.CLUBS));
 
-        Card chosenCard = cardChooser.chooseCard(gameState);
+        AllowedCards allowed = AllowedCardsRules.getFor(gameState);
 
-        Assert.assertNotNull(chosenCard);
-        Assert.assertEquals(gameState.getMyCards().iterator().next(), chosenCard);
+        Assert.assertEquals(gameState.getMyCards(), allowed.get());
     }
 
     @Test
-    public void cardsOnTable_andIHaveCardOfSameSuit_playCardOfSameSuit() {
+    public void cardsOnTable_andIHaveCardOfSameSuit_playCardOfSameSuitOrTrumpf() {
         GameState gameState = new GameState();
         gameState.setMyCards(createMyCards());
         gameState.setCardsOnTable(cardsOnTableFactory.create(new Card(Suit.CLUBS, CardNumber.valueOf(9))));
         gameState.setTrumpf(new TrumpfSuit(Suit.HEARTS));
 
-        Card chosenCard = cardChooser.chooseCard(gameState);
+        AllowedCards allowed = AllowedCardsRules.getFor(gameState);
 
-        Assert.assertNotNull(chosenCard);
-        //Assert.assertEquals(Suit.CLUBS, chosenCard.getSuit());
-        Assert.assertTrue(Suit.CLUBS.equals(chosenCard.getSuit()) || Suit.HEARTS.equals(chosenCard.getSuit()));
-        Assert.assertTrue(gameState.getMyCards().contains(chosenCard));
+        Predicate<Card> isClubsOrHearts = c -> Suit.CLUBS.equals(c.getSuit()) || Suit.HEARTS.equals(c.getSuit());
+        Assert.assertTrue(allowed.get().stream().allMatch(isClubsOrHearts));
     }
 
     @Test
@@ -55,11 +54,13 @@ public class CardChooserTest {
         gameState.setCardsOnTable(createCardOnTableHeartSixAndClubsNine());
         gameState.setTrumpf(new TrumpfSuit(Suit.CLUBS));
 
-        Card chosenCard = cardChooser.chooseCard(gameState);
+        AllowedCards allowed = AllowedCardsRules.getFor(gameState);
 
-        Assert.assertNotNull(chosenCard);
-        Assert.assertEquals(new Card(Suit.DIAMONDS, CardNumber.valueOf(12)), chosenCard);
-        Assert.assertTrue(gameState.getMyCards().contains(chosenCard));
+        Assert.assertEquals(1, allowed.get().size());
+
+        Card card = allowed.get().iterator().next();
+
+        Assert.assertEquals(new Card(Suit.DIAMONDS, CardNumber.QUEEN), card);
     }
 
     @Test
@@ -69,10 +70,9 @@ public class CardChooserTest {
         gameState.setCardsOnTable(createCardOnTableHeartSixAndClubsNine());
         gameState.setTrumpf(createTrumpfSpades());
 
-        Card chosenCard = cardChooser.chooseCard(gameState);
+        AllowedCards allowed = AllowedCardsRules.getFor(gameState);
 
-        Assert.assertNotNull(chosenCard);
-        Assert.assertEquals(new Card(Suit.CLUBS, CardNumber.valueOf(6)), chosenCard);
+        Assert.assertEquals(gameState.getMyCards(), allowed.get());
     }
 
     private Trumpf createTrumpfSpades() {

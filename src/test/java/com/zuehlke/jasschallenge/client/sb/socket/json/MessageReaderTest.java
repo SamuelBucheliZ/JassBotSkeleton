@@ -1,8 +1,8 @@
-package com.zuehlke.jasschallenge.client.sb.socket;
+package com.zuehlke.jasschallenge.client.sb.socket.json;
 
 import com.google.gson.JsonParseException;
-import com.zuehlke.jasschallenge.client.sb.model.card.Card;
-import com.zuehlke.jasschallenge.client.sb.model.card.CardNumber;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
+import com.zuehlke.jasschallenge.client.sb.model.cards.CardNumber;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfMode;
 import com.zuehlke.jasschallenge.client.sb.socket.json.MessageReader;
@@ -10,7 +10,7 @@ import com.zuehlke.jasschallenge.client.sb.socket.messages.BroadcastTrumpf;
 import com.zuehlke.jasschallenge.client.sb.socket.messages.DealCards;
 import com.zuehlke.jasschallenge.client.sb.socket.messages.Message;
 import com.zuehlke.jasschallenge.client.sb.socket.messages.RequestPlayerName;
-import com.zuehlke.jasschallenge.client.sb.model.card.Suit;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 import org.junit.Assert;
 import org.junit.Test;
 

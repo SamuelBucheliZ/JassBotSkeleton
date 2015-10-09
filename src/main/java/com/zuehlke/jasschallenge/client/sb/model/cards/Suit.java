@@ -1,4 +1,4 @@
-package com.zuehlke.jasschallenge.client.sb.model.card;
+package com.zuehlke.jasschallenge.client.sb.model.cards;
 
 /**
  * See: https://en.wikipedia.org/wiki/Suit_(cards)

@@ -2,7 +2,7 @@
 
 Skeleton in Java 8 for writing a Jass bot for the https://github.com/webplatformz/challenge server.
 
-This version is based on the https://github.com/adiherzog/JassBotSkeleton skeleton.
+This version is based on https://github.com/adiherzog/JassBotSkeleton with some https://github.com/fluescher/jass-challenge-client-java mixed in.
 
 ## Build and run
 

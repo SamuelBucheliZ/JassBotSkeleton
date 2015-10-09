@@ -4,7 +4,7 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.zuehlke.jasschallenge.client.sb.socket.messages.*;
 import com.zuehlke.jasschallenge.client.sb.model.Stich;
-import com.zuehlke.jasschallenge.client.sb.model.card.Card;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfMessage;
 
 import java.lang.reflect.Type;

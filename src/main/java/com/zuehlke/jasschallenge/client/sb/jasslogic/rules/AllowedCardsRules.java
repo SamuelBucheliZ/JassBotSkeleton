@@ -1,12 +1,17 @@
 package com.zuehlke.jasschallenge.client.sb.jasslogic.rules;
 
-import com.zuehlke.jasschallenge.client.sb.model.card.Card;
+import com.zuehlke.jasschallenge.client.sb.game.GameState;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 
 import java.util.List;
 import java.util.Set;
 
 public class AllowedCardsRules {
+    public static AllowedCards getFor(GameState gameState) {
+        return getFor(gameState.getMyCards(), gameState.getTrumpf(), gameState.getCardsOnTable());
+    }
+
     public static AllowedCards getFor(Set<Card> playerCards, Trumpf trumpf, List<Card> cardsOnTable) {
         if (thereAreNoCardsOnTheTable(cardsOnTable)) {
             return new NoCardsPlayedYet(playerCards, trumpf, cardsOnTable);

@@ -1,7 +1,7 @@
 package com.zuehlke.jasschallenge.client.sb.model.trumpf;
 
-import com.zuehlke.jasschallenge.client.sb.model.card.Card;
-import com.zuehlke.jasschallenge.client.sb.model.card.Suit;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 
 import java.util.Comparator;
 

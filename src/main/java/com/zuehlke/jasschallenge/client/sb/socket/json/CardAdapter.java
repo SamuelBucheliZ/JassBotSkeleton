@@ -2,9 +2,9 @@ package com.zuehlke.jasschallenge.client.sb.socket.json;
 
 
 import com.google.gson.*;
-import com.zuehlke.jasschallenge.client.sb.model.card.CardNumber;
-import com.zuehlke.jasschallenge.client.sb.model.card.Card;
-import com.zuehlke.jasschallenge.client.sb.model.card.Suit;
+import com.zuehlke.jasschallenge.client.sb.model.cards.CardNumber;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 
 import java.lang.reflect.Type;
 

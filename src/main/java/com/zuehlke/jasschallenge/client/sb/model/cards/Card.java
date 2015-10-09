@@ -1,4 +1,4 @@
-package com.zuehlke.jasschallenge.client.sb.model.card;
+package com.zuehlke.jasschallenge.client.sb.model.cards;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.annotations.SerializedName;

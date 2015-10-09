@@ -1,6 +1,6 @@
 package com.zuehlke.jasschallenge.client.sb.socket.responses;
 
-import com.zuehlke.jasschallenge.client.sb.model.card.Card;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 
 public class ChooseCard implements Response {
     private final ResponseType type = ResponseType.CHOOSE_CARD;

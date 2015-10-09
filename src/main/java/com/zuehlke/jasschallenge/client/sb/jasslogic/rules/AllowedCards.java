@@ -1,8 +1,8 @@
 package com.zuehlke.jasschallenge.client.sb.jasslogic.rules;
 
-import com.zuehlke.jasschallenge.client.sb.model.card.Card;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
-import com.zuehlke.jasschallenge.client.sb.model.card.Suit;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 
 import java.util.*;
 import java.util.function.Predicate;
