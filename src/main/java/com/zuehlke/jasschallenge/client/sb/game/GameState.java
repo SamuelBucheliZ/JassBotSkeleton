@@ -8,73 +8,81 @@ import com.zuehlke.jasschallenge.client.sb.jasslogic.rules.AllowedCardsRules;
 
 import java.util.*;
 
-import java.util.stream.Stream;
-
 public class GameState {
 
-    private Set<Card> myCards = new HashSet<>();
-    private Trumpf trumpf;
-    private List<Card> cardsOnTable;
+    private final Set<Card> myCards = new HashSet<>();
+    private final Stack<Card> playedCards = new Stack<>();
+    private Optional<Trumpf> trumpf = Optional.empty();
+    private List<Card> cardsOnTable = new LinkedList<>();
     private boolean iMadeTrumpf = false;
     private int round = 0;
 
-    public Set<Card> getMyCards() {
-        return myCards;
+    public GameState(Set<Card> myCards) {
+        this.myCards.addAll(myCards);
     }
 
-    public void setMyCards(Set<Card> myCards) {
-        this.myCards = myCards;
+    GameState(Set<Card> myCards, Stack<Card> playedCards, Optional<Trumpf> trumpf, List<Card> cardsOnTable, boolean iMadeTrumpf, int round) {
+        this.myCards.addAll(myCards);
+        this.playedCards.addAll(playedCards);
+        this.trumpf = trumpf;
+        this.cardsOnTable = new ArrayList<>(cardsOnTable);
+        this.iMadeTrumpf = iMadeTrumpf;
+        this.round = round;
+    }
+
+    public Set<Card> getMyCards() {
+        return new HashSet<>(myCards);
+    }
+
+    public void undoPlay(Card card) {
+        Preconditions.checkArgument(this.playedCards.peek().equals(card));
+        this.playedCards.pop();
+        this.myCards.add(card);
+    }
+
+    public void doPlay(Card card) {
+        Preconditions.checkArgument(this.myCards.contains(card));
+        this.myCards.remove(card);
+        this.playedCards.push(card);
     }
 
     public Trumpf getTrumpf() {
-        return trumpf;
+        return trumpf.get();
     }
 
     public void setTrumpf(Trumpf trumpf) {
-        this.trumpf = trumpf;
+        Preconditions.checkState(!this.trumpf.isPresent());
+        this.trumpf = Optional.of(trumpf);
     }
 
     public List<Card> getCardsOnTable() {
-        return cardsOnTable;
+        return new LinkedList<>(cardsOnTable);
     }
 
-    public void setCardsOnTable(List<Card> cardsOnTable) {
-        this.cardsOnTable = cardsOnTable;
+    public void addToTable(Card card) {
+        this.cardsOnTable.add(card);
     }
 
     public boolean isIMadeTrumpf() {
         return iMadeTrumpf;
     }
 
-    public void setIMadeTrumpf(boolean iMadeTrumpf) {
-        this.iMadeTrumpf = iMadeTrumpf;
-    }
-
-    public void setRound(int round) {
-        this.round = round;
+    public void setIMadeTrumpf() {
+        Preconditions.checkState(!this.iMadeTrumpf);
+        this.iMadeTrumpf = true;
     }
 
     public void startNextRound() {
+        this.cardsOnTable.clear();
         round++;
     }
 
-    public void checkIsValid() {
-        Preconditions.checkNotNull(cardsOnTable);
-        Preconditions.checkNotNull(myCards);
-        Preconditions.checkNotNull(trumpf);
-        Preconditions.checkArgument(round >= 0 && round <= 8);
-    }
-
-    public void resetAfterGameRound() {
-        myCards = new HashSet<>();
-        trumpf = null;
-        cardsOnTable = null;
-        iMadeTrumpf = false;
-        round = 0;
+    public int getRound() {
+        return round;
     }
 
     public Set<Card> getAllowedCardsToPlay() {
-        AllowedCards allowedCards = AllowedCardsRules.getFor(myCards, trumpf, cardsOnTable);
+        AllowedCards allowedCards = AllowedCardsRules.getFor(getMyCards(), getTrumpf(), getCardsOnTable());
         return allowedCards.get();
     }
 

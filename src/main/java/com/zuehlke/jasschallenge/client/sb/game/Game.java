@@ -1,5 +1,6 @@
 package com.zuehlke.jasschallenge.client.sb.game;
 
+import com.google.common.base.Preconditions;
 import com.zuehlke.jasschallenge.client.sb.model.Stich;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.Strategy;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
@@ -19,7 +20,7 @@ public class Game {
     private final String sessionName;
     private final Strategy strategy;
 
-    private GameState gameState = new GameState();
+    private GameState state;
 
     public Game(String playerName, String sessionName, Strategy strategy) {
         this.strategy = strategy;
@@ -29,50 +30,55 @@ public class Game {
     }
 
     public void startSession() {
-        strategy.onSessionStarted();
+        strategy.onSessionStarted(state);
     }
 
     public void finishSession() {
-        strategy.onSessionFinished();
+        strategy.onSessionFinished(state);
     }
 
     public void startGame(Trumpf trumpf) {
-        gameState.setTrumpf(trumpf);
-        strategy.onGameStarted();
+        state.setTrumpf(trumpf);
+        strategy.onGameStarted(state);
         log(trumpf.toString());
     }
 
     public void finishGame() {
-        gameState.resetAfterGameRound();
-        strategy.onGameFinished();
+        strategy.onGameFinished(state);
     }
 
-    public Trumpf requestTrumpf() {
-        Trumpf trumpf = strategy.onRequestTrumpf(gameState.getMyCards());
-        if (!trumpf.getMode().equals(TrumpfMode.SCHIEBE)) {
-            gameState.setIMadeTrumpf(true);
+    public Trumpf requestTrumpf(boolean isSchiebenAllowed) {
+        Trumpf trumpf = strategy.onRequestTrumpf(state.getMyCards(), isSchiebenAllowed);
+        if (!TrumpfMode.SCHIEBE.equals(trumpf.getMode())) {
+            state.setIMadeTrumpf();
         }
         return trumpf;
     }
 
     public Card requestCard(List<Card> cardsOnTable) {
-        gameState.setCardsOnTable(cardsOnTable);
-        Card card = strategy.onRequestCard(gameState);
-        gameState.getMyCards().remove(card);
+        Preconditions.checkArgument(state.getCardsOnTable().equals(cardsOnTable));
+        Card card = strategy.onRequestCard(state);
+        state.doPlay(card);
         return card;
     }
 
     public void cardsPlayed(List<Card> playedCards) {
-        strategy.onMoveMade();
+        int indexOfLastElement = playedCards.size() - 1;
+        state.addToTable(playedCards.get(indexOfLastElement));
+        strategy.onMoveMade(state);
+    }
+
+    public void cardRejected(Card card) {
+        state.undoPlay(card);
     }
 
     public void cardsDealt(Set<Card> cards) {
-        gameState.getMyCards().addAll(cards);
+        state = new GameState(cards);
     }
 
     public void stichMade(Stich stich) {
         logger.info(playerName + ": " + stich);
-        gameState.startNextRound();
+        state.startNextRound();
     }
 
     public void log(String message) {

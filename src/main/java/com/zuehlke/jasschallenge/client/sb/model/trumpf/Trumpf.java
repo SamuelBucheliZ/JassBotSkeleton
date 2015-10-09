@@ -1,20 +1,55 @@
 package com.zuehlke.jasschallenge.client.sb.model.trumpf;
 
+import com.google.common.base.Preconditions;
+import com.google.gson.annotations.SerializedName;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 
 import java.util.Comparator;
+import java.util.Objects;
 
 public abstract class Trumpf {
+    public static Trumpf from(TrumpfMode mode, Suit suit) {
+        Trumpf trumpf;
+        switch(mode) {
+            case TRUMPF:
+                Preconditions.checkNotNull(suit);
+                trumpf = new TrumpfSuit(suit);
+                break;
+            case OBEABE:
+                Preconditions.checkArgument(Objects.isNull(suit));
+                trumpf = new TrumpfObeabe();
+                break;
+            case UNDEUFE:
+                Preconditions.checkArgument(Objects.isNull(suit));
+                trumpf = new TrumpfUndeufe();
+                break;
+            case SCHIEBE:
+                Preconditions.checkArgument(Objects.isNull(suit));
+                trumpf = new TrumpfSchiebe();
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown mode: " + mode);
+        }
+        return trumpf;
+    }
 
-    public abstract TrumpfMessage toTrumpfMessage();
+    private final TrumpfMode mode;
 
-    public abstract Suit getSuit();
+    @SerializedName("trumpfColor")
+    private final Suit suit;
 
-    public abstract TrumpfMode getMode();
+    Trumpf(TrumpfMode mode, Suit suit) {
+        Preconditions.checkArgument(TrumpfMode.TRUMPF.equals(mode));
+        this.mode = mode;
+        this.suit = suit;
+    }
 
-    @Override
-    public abstract String toString();
+    Trumpf(TrumpfMode mode) {
+        Preconditions.checkArgument(!TrumpfMode.TRUMPF.equals(mode));
+        this.mode = mode;
+        this.suit = null;
+    }
 
     public abstract boolean isObenabeOrUndeufe();
 
@@ -26,4 +61,15 @@ public abstract class Trumpf {
     }
 
     public abstract Comparator<Card> getComparator();
+
+    public TrumpfMode getMode() {
+        return mode;
+    }
+
+    public Suit getSuit() {
+        return suit;
+    }
+
+    @Override
+    public abstract String toString();
 }

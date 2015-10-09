@@ -19,10 +19,11 @@ public class GameStateTest {
 
     @Test
     public void getAllowedCardsToPlay_noCardsOnTable_allCardsAreAllowed() {
-        GameState gameState = new GameState();
-        gameState.setTrumpf(new TrumpfSuit(Suit.CLUBS));
-        gameState.setMyCards(createMyCards());
-        gameState.setCardsOnTable(createCardsOnTable());
+        GameStateBuilder builder = new GameStateBuilder();
+        builder.setTrumpf(new TrumpfSuit(Suit.CLUBS));
+        builder.setMyCards(createMyCards());
+        builder.setCardsOnTable(createCardsOnTable());
+        GameState gameState = builder.build();
 
         Set<Card> allowedCardsToPlay = gameState.getAllowedCardsToPlay();
 
@@ -31,10 +32,11 @@ public class GameStateTest {
 
     @Test
     public void getAllowedCardsToPlay_oneCardPlayed_andIHaveThisSuit_onlyCardsOfThisSuitAndTrumpfsAreAllowed() {
-        GameState gameState = new GameState();
-        gameState.setTrumpf(new TrumpfSuit(Suit.CLUBS));
-        gameState.setMyCards(createMyCards());
-        gameState.setCardsOnTable(createCardsOnTable(new Card(Suit.HEARTS, CardNumber.valueOf(6))));
+        GameStateBuilder builder = new GameStateBuilder();
+        builder.setTrumpf(new TrumpfSuit(Suit.CLUBS));
+        builder.setMyCards(createMyCards());
+        builder.setCardsOnTable(createCardsOnTable(new Card(Suit.HEARTS, CardNumber.valueOf(6))));
+        GameState gameState = builder.build();
 
         Set<Card> allowedCardsToPlay = gameState.getAllowedCardsToPlay();
 
@@ -45,10 +47,11 @@ public class GameStateTest {
 
     @Test
     public void getAllowedCardsToPlay_trumpfOnTableButNotFirst_onlySmallerTrumpfsInHandPlusOtherCards_trumpfIsNotPlayed() {
-        GameState gameState = new GameState();
-        gameState.setTrumpf(new TrumpfSuit(Suit.CLUBS));
-        gameState.setMyCards(createMyCardsOnlySmallTrumpfsPlusOneDiamond());
-        gameState.setCardsOnTable(createCardOnTableHeartSixAndClubsNine());
+        GameStateBuilder builder = new GameStateBuilder();
+        builder.setTrumpf(new TrumpfSuit(Suit.CLUBS));
+        builder.setMyCards(createMyCardsOnlySmallTrumpfsPlusOneDiamond());
+        builder.setCardsOnTable(createCardOnTableHeartSixAndClubsNine());
+        GameState gameState = builder.build();
 
         Set<Card> allowedCardsToPlay = gameState.getAllowedCardsToPlay();
 
@@ -59,10 +62,11 @@ public class GameStateTest {
 
     @Test
     public void getAllowedCardsToPlay_undeufe_heartOnTable_heartInHand_thenHeartIsPlayed() {
-        GameState gameState = new GameState();
-        gameState.setTrumpf(new TrumpfUndeufe());
-        gameState.setMyCards(createMyCardsWithOneHeart());
-        gameState.setCardsOnTable(createCardOnTableHeartSix());
+        GameStateBuilder builder = new GameStateBuilder();
+        builder.setTrumpf(new TrumpfUndeufe());
+        builder.setMyCards(createMyCardsWithOneHeart());
+        builder.setCardsOnTable(createCardOnTableHeartSix());
+        GameState gameState = builder.build();
 
         Set<Card> allowedCardsToPlay = gameState.getAllowedCardsToPlay();
 
@@ -73,29 +77,31 @@ public class GameStateTest {
 
     @Test
     public void getAllowedCardsToPlay_threeNonTrumpfsPlayed_iHaveATrumpfAndThreeMatchingNonTrumpfs_theyAreAllReturned() {
-        GameState gameState = new GameState();
-        gameState.setMyCards(myCardsFactory.createMyCardsOneHeartThreeSpadesOneClubs());
-        gameState.setCardsOnTable(cardsOnTableFactory.createCardsOnTableThreeSpades());
-        gameState.setTrumpf(new TrumpfSuit(Suit.HEARTS));
-        gameState.setIMadeTrumpf(false);
-        gameState.setRound(4);
+        GameStateBuilder builder = new GameStateBuilder();
+        builder.setMyCards(myCardsFactory.createMyCardsOneHeartThreeSpadesOneClubs());
+        builder.setCardsOnTable(cardsOnTableFactory.createCardsOnTableThreeSpades());
+        builder.setTrumpf(new TrumpfSuit(Suit.HEARTS));
+        builder.setIMadeTrumpf(false);
+        builder.setRound(4);
+        GameState gameState = builder.build();
 
         Set<Card> allowedCardsToPlay = gameState.getAllowedCardsToPlay();
 
         Assert.assertEquals(4, allowedCardsToPlay.size());
-        Assert.assertTrue(allowedCardsToPlay.contains(new Card(Suit.SPADES, CardNumber.valueOf(6))));
-        Assert.assertTrue(allowedCardsToPlay.contains(new Card(Suit.SPADES, CardNumber.valueOf(11))));
-        Assert.assertTrue(allowedCardsToPlay.contains(new Card(Suit.SPADES, CardNumber.valueOf(7))));
-        Assert.assertTrue(allowedCardsToPlay.contains(new Card(Suit.HEARTS, CardNumber.valueOf(10))));
+        Assert.assertTrue(allowedCardsToPlay.contains(new Card(Suit.SPADES, CardNumber.SIX)));
+        Assert.assertTrue(allowedCardsToPlay.contains(new Card(Suit.SPADES, CardNumber.JACK)));
+        Assert.assertTrue(allowedCardsToPlay.contains(new Card(Suit.SPADES, CardNumber.SEVEN)));
+        Assert.assertTrue(allowedCardsToPlay.contains(new Card(Suit.HEARTS, CardNumber.TEN)));
     }
 
     @Test
     public void getAllowedCardsToPlay_thirdCardOnTableIsTrumpf_iHaveATrumpfAndThreeMatchingNonTrumpfs_myOnlyTrumpfIsLower_onlyNonTrumpfsAreReturned() {
-        GameState gameState = new GameState();
-        gameState.setTrumpf(new TrumpfSuit(Suit.DIAMONDS));
-        gameState.setCardsOnTable(cardsOnTableFactory.create(new Card(Suit.HEARTS, CardNumber.valueOf(12)), new Card(Suit.HEARTS, CardNumber.valueOf(13)), new Card(Suit.DIAMONDS, CardNumber.valueOf(11))));
-        gameState.setMyCards(myCardsFactory.create(new Card(Suit.DIAMONDS, CardNumber.valueOf(12)), new Card(Suit.HEARTS, CardNumber.valueOf(11)), new Card(Suit.CLUBS, CardNumber.valueOf(8))));
-        gameState.setIMadeTrumpf(false);
+        GameStateBuilder builder = new GameStateBuilder();
+        builder.setTrumpf(new TrumpfSuit(Suit.DIAMONDS));
+        builder.setCardsOnTable(cardsOnTableFactory.create(new Card(Suit.HEARTS, CardNumber.valueOf(12)), new Card(Suit.HEARTS, CardNumber.valueOf(13)), new Card(Suit.DIAMONDS, CardNumber.valueOf(11))));
+        builder.setMyCards(myCardsFactory.create(new Card(Suit.DIAMONDS, CardNumber.valueOf(12)), new Card(Suit.HEARTS, CardNumber.valueOf(11)), new Card(Suit.CLUBS, CardNumber.valueOf(8))));
+        builder.setIMadeTrumpf(false);
+        GameState gameState = builder.build();
 
         Set<Card> allowedCardsToPlay = gameState.getAllowedCardsToPlay();
 
@@ -105,11 +111,12 @@ public class GameStateTest {
 
     @Test
     public void getAllowedCardsToPlay_trumpfIsPlayed_andIHaveOnlyAweakerTrumpf_iStillHaveToPlayIt() {
-        GameState gameState = new GameState();
-        gameState.setTrumpf(new TrumpfSuit(Suit.SPADES));
-        gameState.setCardsOnTable(cardsOnTableFactory.create(new Card(Suit.SPADES, CardNumber.valueOf(11)), new Card(Suit.CLUBS, CardNumber.valueOf(10))));
-        gameState.setMyCards(myCardsFactory.create(new Card(Suit.DIAMONDS, CardNumber.valueOf(8)), new Card(Suit.SPADES, CardNumber.valueOf(6))));
-        gameState.setIMadeTrumpf(false);
+        GameStateBuilder builder = new GameStateBuilder();
+        builder.setTrumpf(new TrumpfSuit(Suit.SPADES));
+        builder.setCardsOnTable(cardsOnTableFactory.create(new Card(Suit.SPADES, CardNumber.valueOf(11)), new Card(Suit.CLUBS, CardNumber.valueOf(10))));
+        builder.setMyCards(myCardsFactory.create(new Card(Suit.DIAMONDS, CardNumber.valueOf(8)), new Card(Suit.SPADES, CardNumber.valueOf(6))));
+        builder.setIMadeTrumpf(false);
+        GameState gameState = builder.build();
 
         Set<Card> allowedCardsToPlay = gameState.getAllowedCardsToPlay();
 

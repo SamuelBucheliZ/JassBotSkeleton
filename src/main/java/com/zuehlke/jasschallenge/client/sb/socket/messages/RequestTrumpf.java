@@ -16,7 +16,7 @@ public class RequestTrumpf implements Message {
 
     @Override
     public Optional<Response> dispatch(Game game) {
-        Trumpf trumpf = game.requestTrumpf();
+        Trumpf trumpf = game.requestTrumpf(isSchiebenAllowed);
         Response response = new ChooseTrumpf(trumpf);
         return Optional.of(response);
     }

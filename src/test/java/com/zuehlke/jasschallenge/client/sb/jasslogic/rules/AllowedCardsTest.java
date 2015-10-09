@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.sb.jasslogic.rules;
 
 import com.zuehlke.jasschallenge.client.sb.game.GameState;
+import com.zuehlke.jasschallenge.client.sb.game.GameStateBuilder;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.CardsOnTableTestDataFactory;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.MyCardsTestDataFactory;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
@@ -24,10 +25,11 @@ public class AllowedCardsTest {
 
     @Test
     public void noCardsOnTable_playAnyCard() {
-        GameState gameState = new GameState();
-        gameState.setMyCards(createMyCards());
-        gameState.setCardsOnTable(createCardsOnTableEmpty());
-        gameState.setTrumpf(new TrumpfSuit(Suit.CLUBS));
+        GameStateBuilder builder = new GameStateBuilder();
+        builder.setMyCards(createMyCards());
+        builder.setCardsOnTable(createCardsOnTableEmpty());
+        builder.setTrumpf(new TrumpfSuit(Suit.CLUBS));
+        GameState gameState = builder.build();
 
         AllowedCards allowed = AllowedCardsRules.getFor(gameState);
 
@@ -36,10 +38,11 @@ public class AllowedCardsTest {
 
     @Test
     public void cardsOnTable_andIHaveCardOfSameSuit_playCardOfSameSuitOrTrumpf() {
-        GameState gameState = new GameState();
-        gameState.setMyCards(createMyCards());
-        gameState.setCardsOnTable(cardsOnTableFactory.create(new Card(Suit.CLUBS, CardNumber.valueOf(9))));
-        gameState.setTrumpf(new TrumpfSuit(Suit.HEARTS));
+        GameStateBuilder builder = new GameStateBuilder();
+        builder.setMyCards(createMyCards());
+        builder.setCardsOnTable(cardsOnTableFactory.create(new Card(Suit.CLUBS, CardNumber.valueOf(9))));
+        builder.setTrumpf(new TrumpfSuit(Suit.HEARTS));
+        GameState gameState = builder.build();
 
         AllowedCards allowed = AllowedCardsRules.getFor(gameState);
 
@@ -49,10 +52,11 @@ public class AllowedCardsTest {
 
     @Test
     public void firstCardNotTrumpf_butTrumpfOnTable_andIHaveOnlyLowerTrumpfs_thisTrumpfIsNotPlayed() {
-        GameState gameState = new GameState();
-        gameState.setMyCards(createMyCardsOnlySmallTrumpfsPlusOneDiamond());
-        gameState.setCardsOnTable(createCardOnTableHeartSixAndClubsNine());
-        gameState.setTrumpf(new TrumpfSuit(Suit.CLUBS));
+        GameStateBuilder builder = new GameStateBuilder();
+        builder.setMyCards(createMyCardsOnlySmallTrumpfsPlusOneDiamond());
+        builder.setCardsOnTable(createCardOnTableHeartSixAndClubsNine());
+        builder.setTrumpf(new TrumpfSuit(Suit.CLUBS));
+        GameState gameState = builder.build();
 
         AllowedCards allowed = AllowedCardsRules.getFor(gameState);
 
@@ -65,10 +69,11 @@ public class AllowedCardsTest {
 
     @Test
     public void noMatchingCardAtHand_playAnyCard() {
-        GameState gameState = new GameState();
-        gameState.setMyCards(createMyCardsOnlyClubsSix());
-        gameState.setCardsOnTable(createCardOnTableHeartSixAndClubsNine());
-        gameState.setTrumpf(createTrumpfSpades());
+        GameStateBuilder builder = new GameStateBuilder();
+        builder.setMyCards(createMyCardsOnlyClubsSix());
+        builder.setCardsOnTable(createCardOnTableHeartSixAndClubsNine());
+        builder.setTrumpf(createTrumpfSpades());
+        GameState gameState = builder.build();
 
         AllowedCards allowed = AllowedCardsRules.getFor(gameState);
 

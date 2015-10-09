@@ -8,23 +8,22 @@ import java.util.Set;
 
 public interface Strategy {
     /* on RequestTrumpf */
-    Trumpf onRequestTrumpf(Set<Card> myCards);
+    Trumpf onRequestTrumpf(Set<Card> myCards, boolean isSchiebenAllowed);
 
     /* on RequestCard */
-    Card onRequestCard(GameState gameState);
+    Card onRequestCard(GameState state);
 
     /* on PlayedCards */
-    default void onMoveMade() {}
+    default void onMoveMade(GameState state) {}
 
     /* on BroadcastTeam */
-    default void onSessionStarted() {}
+    default void onSessionStarted(GameState state) {}
     /* on BroadcastWinnerTeam */
-    default void onSessionFinished() {}
+    default void onSessionFinished(GameState state) {}
 
     /* on BroadcastTrumpf */
-    default void onGameStarted() {}
+    default void onGameStarted(GameState state) {}
     /* on BroadcastGameFinished */
-    default void onGameFinished() {}
-
+    default void onGameFinished(GameState state) {}
 
 }

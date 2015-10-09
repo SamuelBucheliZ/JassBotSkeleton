@@ -2,10 +2,10 @@ package com.zuehlke.jasschallenge.client.sb.socket.json;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 import com.zuehlke.jasschallenge.client.sb.socket.messages.*;
 import com.zuehlke.jasschallenge.client.sb.model.Stich;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
-import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfMessage;
 
 import java.lang.reflect.Type;
 import java.util.*;
@@ -15,7 +15,7 @@ public class MessageAdapter implements JsonDeserializer<Message> {
     private static final Type listOfCardsType = new TypeToken<LinkedList<Card>>(){}.getType();
     private static final Type setOfCardsType = new TypeToken<HashSet<Card>>(){}.getType();
     private static final Type stichType = new TypeToken<Stich>(){}.getType();
-    private static final Type trumpfMessageType = new TypeToken<TrumpfMessage>(){}.getType();
+    private static final Type trumpfType = new TypeToken<Trumpf>(){}.getType();
 
     @Override
     public Message deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
@@ -45,8 +45,8 @@ public class MessageAdapter implements JsonDeserializer<Message> {
                 message = new BroadcastTeams(jsonElement.toString());
                 break;
             case BROADCAST_TRUMPF:
-                TrumpfMessage trumpfMessage = jsonDeserializationContext.deserialize(data, trumpfMessageType);
-                message = new BroadcastTrumpf(trumpfMessage.toTrumpf());
+                Trumpf trumpf = jsonDeserializationContext.deserialize(data, trumpfType);
+                message = new BroadcastTrumpf(trumpf);
                 break;
             case BROADCAST_WINNER_TEAM:
                 message = new BroadcastWinnerTeam();

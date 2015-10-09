@@ -2,7 +2,6 @@ package com.zuehlke.jasschallenge.client.sb.model.trumpf;
 
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.cards.CardNumber;
-import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -22,21 +21,8 @@ public class TrumpfObeabe extends Trumpf {
         cardValues.put(CardNumber.ACE, 11);
     }
 
-    private TrumpfMode mode = TrumpfMode.OBEABE;
-
-    @Override
-    public TrumpfMessage toTrumpfMessage() {
-        return new TrumpfMessage(mode);
-    }
-
-    @Override
-    public Suit getSuit() {
-        return null;
-    }
-
-    @Override
-    public TrumpfMode getMode() {
-        return mode;
+    public TrumpfObeabe() {
+        super(TrumpfMode.OBEABE);
     }
 
     @Override
@@ -56,6 +42,6 @@ public class TrumpfObeabe extends Trumpf {
 
     @Override
     public String toString() {
-        return String.valueOf(mode);
+        return String.valueOf(getMode());
     }
 }

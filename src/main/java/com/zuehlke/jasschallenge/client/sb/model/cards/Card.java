@@ -2,7 +2,6 @@ package com.zuehlke.jasschallenge.client.sb.model.cards;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.annotations.SerializedName;
-import com.sun.istack.internal.NotNull;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfMode;
 
@@ -10,9 +9,9 @@ import java.util.Comparator;
 
 public class Card implements Comparable {
 
-    private CardNumber cardNumber;
+    private final CardNumber cardNumber;
     @SerializedName("color")
-    private Suit suit;
+    private final Suit suit;
 
     public Card(Suit suit, CardNumber cardNumber) {
         Preconditions.checkNotNull(suit);
@@ -35,7 +34,7 @@ public class Card implements Comparable {
     }
 
     @Override
-    public int compareTo(@NotNull Object o) {
+    public int compareTo(Object o) {
         if (!(o instanceof Card)) {
             throw new IllegalArgumentException("Expected card but was " + o.getClass().getName());
         }

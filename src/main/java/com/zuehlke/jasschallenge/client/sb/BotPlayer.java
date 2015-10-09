@@ -4,7 +4,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.zuehlke.jasschallenge.client.sb.game.Game;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.Strategy;
-import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.TrivialStrategy;
+import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.RandomStrategy;
 import com.zuehlke.jasschallenge.client.sb.socket.JassBotClientEndpoint;
 import org.apache.log4j.Logger;
 import org.glassfish.tyrus.client.ClientManager;
@@ -26,13 +26,12 @@ public class BotPlayer {
 
     private Logger logger = Logger.getLogger(this.getClass());
 
-
     public BotPlayer(CountDownLatch countDown, int playerID) {
         //String playerName = BOT_NAME_PREFIX + playerID + ":" + UUID.randomUUID().hashCode();
         String playerName = BOT_NAME_PREFIX + playerID;
         logger.info("Creating bot player " + playerName + " for session " + SESSION_NAME);
 
-        Strategy strategy = new TrivialStrategy();
+        Strategy strategy = new RandomStrategy();
         Game game = new Game(playerName, SESSION_NAME, strategy);
 
         ClientManager client = ClientManager.createClient();

@@ -35,25 +35,8 @@ public class TrumpfSuit extends Trumpf {
         trumpfCardValues.put(CardNumber.ACE, 11);
     }
 
-    private Suit suit;
-
     public TrumpfSuit(Suit suit) {
-        this.suit = suit;
-    }
-
-    @Override
-    public TrumpfMessage toTrumpfMessage() {
-        return new TrumpfMessage(TrumpfMode.TRUMPF, suit);
-    }
-
-    @Override
-    public Suit getSuit() {
-        return suit;
-    }
-
-    @Override
-    public TrumpfMode getMode() {
-        return TrumpfMode.TRUMPF;
+        super(TrumpfMode.TRUMPF, suit);
     }
 
     @Override
@@ -63,7 +46,7 @@ public class TrumpfSuit extends Trumpf {
 
     @Override
     public int getValueOf(Card card) {
-        if (suit.equals(card.getSuit())) {
+        if (getSuit().equals(card.getSuit())) {
             return trumpfCardValues.get(card.getCardNumber());
         } else {
             return regularCardValues.get(card.getCardNumber());
@@ -105,6 +88,6 @@ public class TrumpfSuit extends Trumpf {
 
     @Override
     public String toString() {
-        return String.valueOf(TrumpfMode.TRUMPF) + " " + suit;
+        return String.valueOf(TrumpfMode.TRUMPF) + " " + getSuit();
     }
 }
