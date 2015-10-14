@@ -61,18 +61,8 @@ public class SessionInfo {
         return playerOrdering.get();
     }
 
-    public int getPlayerIdFrom(int playerId, int offset) {
-        List<Integer> playerIdsInOrder = getPlayerIdsInOrder();
-        int index = playerIdsInOrder.indexOf(playerId);
-        return (index + offset) % playerIdsInOrder.size();
-    }
-
     public int getNextPlayerIdFrom(int playerId) {
-        return getPlayerIdFrom(playerId, 1);
-    }
-
-    public List<Integer> getPlayerIdsInOrder() {
-        return playerOrdering.get().getPlayerIdsInOrder();
+        return getPlayerOrdering().getNextPlayerIdFrom(playerId);
     }
 
     public String getPlayerName() {

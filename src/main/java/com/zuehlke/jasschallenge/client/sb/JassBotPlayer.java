@@ -16,6 +16,7 @@ import javax.websocket.DeploymentException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -26,14 +27,17 @@ public class JassBotPlayer {
     private static final String SERVER_URI = conf.getString("SERVER_URI");
     private static final String SESSION_NAME = conf.getString("SESSION_NAME");
     private static final String BOT_NAME_PREFIX = conf.getString("BOT_NAME_PREFIX");
+    private static final boolean APPEND_UUID_TO_BOT_NAME = conf.getBoolean("APPEND_UUID_TO_BOT_NAME");
     private static final SessionChoice SESSION_CHOICE = SessionChoice.valueOf(conf.getString("SESSION_CHOICE"));
     private static final SessionType SESSION_TYPE = SessionType.valueOf(conf.getString("SESSION_TYPE"));
 
     private static final Logger logger = LogManager.getLogger(JassBotPlayer.class);
 
     public JassBotPlayer(CountDownLatch countDown, int playerID, Strategy strategy) {
-        //String playerName = BOT_NAME_PREFIX + playerID + ":" + UUID.randomUUID().hashCode();
         String playerName = BOT_NAME_PREFIX + playerID;
+        if (APPEND_UUID_TO_BOT_NAME) {
+            playerName += ":" + UUID.randomUUID().hashCode();
+        }
         logger.info("Creating bot player {} for session  {}.", playerName, SESSION_NAME);
 
         Game game = new Game(playerName, SESSION_NAME, SESSION_CHOICE, SESSION_TYPE, strategy);

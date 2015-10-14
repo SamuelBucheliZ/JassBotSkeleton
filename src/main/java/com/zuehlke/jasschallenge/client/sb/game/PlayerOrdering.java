@@ -3,10 +3,7 @@ package com.zuehlke.jasschallenge.client.sb.game;
 import com.google.common.base.Preconditions;
 import com.zuehlke.jasschallenge.client.sb.model.Team;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -27,7 +24,7 @@ public class PlayerOrdering {
     }
 
     public PlayerOrdering(List<Integer> playerIdsInOrder) {
-        this.playerIdsInOrder = playerIdsInOrder;
+        this.playerIdsInOrder = new ArrayList<>(playerIdsInOrder);
     }
 
     public int getNextPlayerIdFrom(int playerId) {
@@ -39,7 +36,9 @@ public class PlayerOrdering {
     }
 
     public int getPlayerIdFrom(int playerId, int offset) {
+        Preconditions.checkArgument(offset >= 0);
         int index = playerIdsInOrder.indexOf(playerId);
-        return (index + offset) % playerIdsInOrder.size();
+        int nextIndex = (index + offset) % playerIdsInOrder.size();
+        return playerIdsInOrder.get(nextIndex);
     }
 }

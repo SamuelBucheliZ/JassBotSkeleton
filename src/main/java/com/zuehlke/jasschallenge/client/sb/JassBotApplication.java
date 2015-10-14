@@ -8,6 +8,8 @@ import org.apache.logging.log4j.Logger;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.MonteCarloStrategy;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.RandomStrategy;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.Strategy;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.spi.LoggerContext;
 
 /**
  * This is a Jass (swiss card game) bot implementation that plays the game
