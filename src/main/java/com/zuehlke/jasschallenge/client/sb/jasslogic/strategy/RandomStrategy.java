@@ -5,7 +5,6 @@ import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfMode;
-import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfSchiebe;
 
 import java.util.Random;
 import java.util.Set;
@@ -17,12 +16,11 @@ public class RandomStrategy implements Strategy {
     private Random rand = new Random();
 
     @Override
-    public Trumpf onRequestTrumpf(Set<Card> myCards, boolean isSchiebenAllowed) {
+    public Trumpf onRequestTrumpf(Set<Card> myCards, boolean isGeschoben) {
         TrumpfMode mode;
-        // WARNING: TrumpfMode.SCHIEBE seems to not be properly supported on the server, currently?
         do {
             mode = chooseRandomly(TrumpfMode.values());
-        } while(TrumpfMode.SCHIEBE.equals(mode));
+        } while(isGeschoben && TrumpfMode.SCHIEBE.equals(mode));
         Suit suit = null;
         if (TrumpfMode.TRUMPF.equals(mode)) {
             suit = chooseRandomly(Suit.values());

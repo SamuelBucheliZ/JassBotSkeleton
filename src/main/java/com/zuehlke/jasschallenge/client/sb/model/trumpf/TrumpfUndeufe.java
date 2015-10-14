@@ -38,7 +38,7 @@ public class TrumpfUndeufe extends Trumpf {
 
     @Override
     public Comparator<Card> getComparator() {
-        return (leftCard, rightCard) -> -leftCard.compareTo(rightCard);
+        return (c1, c2) -> -Integer.valueOf(c1.getNumber()).compareTo(c2.getNumber());
     }
 
     @Override

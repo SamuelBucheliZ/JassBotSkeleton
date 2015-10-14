@@ -5,7 +5,9 @@ import com.google.gson.annotations.SerializedName;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 public abstract class Trumpf {
@@ -72,4 +74,12 @@ public abstract class Trumpf {
 
     @Override
     public abstract String toString();
+
+    public int getValueOf(Collection<Card> cards) {
+        int points = 0;
+        for (Card card: cards) {
+            points += getValueOf(card);
+        }
+        return points;
+    }
 }

@@ -44,7 +44,7 @@ public abstract class AllowedCards {
     }
 
     Comparator<Card> getTrumpfComparator() {
-        return Card.getComperatorForTrumpf(trumpf);
+        return trumpf.getComparator();
     }
 
     Optional<Card> getFirstCardOnTable() {

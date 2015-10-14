@@ -6,15 +6,15 @@ import com.zuehlke.jasschallenge.client.sb.socket.responses.Response;
 import java.util.Optional;
 
 public class BroadcastSessionJoined implements Message {
-    private final String message;
+    private final SessionJoinedData data;
 
-    public BroadcastSessionJoined(String message) {
-        this.message = message;
+    public BroadcastSessionJoined(SessionJoinedData data) {
+        this.data = data;
     }
 
     @Override
     public Optional<Response> dispatch(Game game) {
-        game.log("Message from server: " + message);
+        game.joinSession(data.getPlayer());
         return Optional.empty();
     }
 }

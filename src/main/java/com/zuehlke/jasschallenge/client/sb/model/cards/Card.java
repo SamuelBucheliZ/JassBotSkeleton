@@ -1,29 +1,83 @@
 package com.zuehlke.jasschallenge.client.sb.model.cards;
 
-import com.google.common.base.Preconditions;
-import com.google.gson.annotations.SerializedName;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfMode;
 
-import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
-public class Card implements Comparable {
+import static com.zuehlke.jasschallenge.client.sb.model.cards.CardNumber.*;
+import static com.zuehlke.jasschallenge.client.sb.model.cards.Suit.*;
 
-    private final CardNumber cardNumber;
-    @SerializedName("color")
+
+public enum Card {
+    HEART_SIX(HEARTS, SIX),
+    HEART_SEVEN(HEARTS, SEVEN),
+    HEART_EIGHT(HEARTS, EIGHT),
+    HEART_NINE(HEARTS, NINE),
+    HEART_TEN(HEARTS, TEN),
+    HEART_JACK(HEARTS, JACK),
+    HEART_QUEEN(HEARTS, QUEEN),
+    HEART_KING(HEARTS, KING),
+    HEART_ACE(HEARTS, ACE),
+
+    DIAMOND_SIX(DIAMONDS, SIX),
+    DIAMOND_SEVEN(DIAMONDS, SEVEN),
+    DIAMOND_EIGHT(DIAMONDS, EIGHT),
+    DIAMOND_NINE(DIAMONDS, NINE),
+    DIAMOND_TEN(DIAMONDS, TEN),
+    DIAMOND_JACK(DIAMONDS, JACK),
+    DIAMOND_QUEEN(DIAMONDS, QUEEN),
+    DIAMOND_KING(DIAMONDS, KING),
+    DIAMOND_ACE(DIAMONDS, ACE),
+
+    CLUB_SIX(CLUBS, SIX),
+    CLUB_SEVEN(CLUBS, SEVEN),
+    CLUB_EIGHT(CLUBS, EIGHT),
+    CLUB_NINE(CLUBS, NINE),
+    CLUB_TEN(CLUBS, TEN),
+    CLUB_JACK(CLUBS, JACK),
+    CLUB_QUEEN(CLUBS, QUEEN),
+    CLUB_KING(CLUBS, KING),
+    CLUB_ACE(CLUBS, ACE),
+
+    SPADE_SIX(SPADES, SIX),
+    SPADE_SEVEN(SPADES, SEVEN),
+    SPADE_EIGHT(SPADES, EIGHT),
+    SPADE_NINE(SPADES, NINE),
+    SPADE_TEN(SPADES, TEN),
+    SPADE_JACK(SPADES, JACK),
+    SPADE_QUEEN(SPADES, QUEEN),
+    SPADE_KING(SPADES, KING),
+    SPADE_ACE(SPADES, ACE);
+
     private final Suit suit;
+    private final CardNumber cardNumber;
 
-    public Card(Suit suit, CardNumber cardNumber) {
-        Preconditions.checkNotNull(suit);
-        Preconditions.checkNotNull(cardNumber);
+    private static Map<Suit, Map<CardNumber, Card>> values = new HashMap<>();
+
+    static {
+        for (Suit suit: Suit.values()) {
+            values.put(suit, new HashMap<>());
+        }
+        for (Card card : Card.values()) {
+            values.get(card.getSuit()).put(card.getCardNumber(), card);
+        }
+    }
+
+    Card(Suit suit, CardNumber cardNumber) {
         this.suit = suit;
         this.cardNumber = cardNumber;
     }
 
-    @Override
+    public static Card valueOf(Suit suit, CardNumber cardNumber) {
+        return values.get(suit).get(cardNumber);
+    }
+
+    /*@Override
     public String toString() {
         return suit.getUnicodeCharacter() + " " + cardNumber.getNumber();
-    }
+    }*/
 
     public CardNumber getCardNumber() { return cardNumber; }
 
@@ -33,47 +87,8 @@ public class Card implements Comparable {
         return suit;
     }
 
-    @Override
-    public int compareTo(Object o) {
-        if (!(o instanceof Card)) {
-            throw new IllegalArgumentException("Expected card but was " + o.getClass().getName());
-        }
-        Card other = (Card) o;
-
-        return Integer.valueOf(this.getNumber()).compareTo(other.getNumber());
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Card card = (Card) o;
-
-        return new org.apache.commons.lang3.builder.EqualsBuilder()
-                .append(suit, card.suit)
-                .append(cardNumber, card.cardNumber)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new org.apache.commons.lang3.builder.HashCodeBuilder(17, 37)
-                .append(suit)
-                .append(cardNumber)
-                .toHashCode();
-    }
-
     public boolean beatsCard(Card card, Trumpf trumpf) {
         return trumpf.beatsCard(this, card);
-    }
-
-    /**
-     * Allows to sort cards by their strength given a certain trumpf.
-     */
-    public static Comparator<Card> getComperatorForTrumpf(Trumpf trumpf) {
-        return trumpf.getComparator();
     }
 
     public boolean isTrumpf(Trumpf trumpf) {

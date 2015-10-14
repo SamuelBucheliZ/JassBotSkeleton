@@ -8,16 +8,18 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.zuehlke.jasschallenge.client.sb.model.cards.Card.*;
+
 public class MyCardsTestDataFactory {
 
     public Set<Card> createMyCardsOneHeartThreeSpadesOneClubs() {
         Set<Card> cards = new HashSet<>();
 
-        cards.add(new Card(Suit.SPADES, CardNumber.valueOf(6)));
-        cards.add(new Card(Suit.SPADES, CardNumber.valueOf(11)));
-        cards.add(new Card(Suit.CLUBS, CardNumber.valueOf(13)));
-        cards.add(new Card(Suit.SPADES, CardNumber.valueOf(7)));
-        cards.add(new Card(Suit.HEARTS, CardNumber.valueOf(10)));
+        cards.add(SPADE_SIX);
+        cards.add(SPADE_JACK);
+        cards.add(CLUB_KING);
+        cards.add(SPADE_SEVEN);
+        cards.add(HEART_TEN);
 
         return cards;
     }
@@ -25,15 +27,15 @@ public class MyCardsTestDataFactory {
     public Set<Card> createMyCardsWithJackNineAndThirdCard() {
         Set<Card> cards = new HashSet<>();
 
-        cards.add(new Card(Suit.HEARTS, CardNumber.valueOf(9)));
-        cards.add(new Card(Suit.HEARTS, CardNumber.valueOf(11)));
-        cards.add(new Card(Suit.HEARTS, CardNumber.valueOf(7)));
-        cards.add(new Card(Suit.CLUBS, CardNumber.valueOf(6)));
-        cards.add(new Card(Suit.CLUBS, CardNumber.valueOf(7)));
-        cards.add(new Card(Suit.CLUBS, CardNumber.valueOf(8)));
-        cards.add(new Card(Suit.DIAMONDS, CardNumber.valueOf(12)));
-        cards.add(new Card(Suit.DIAMONDS, CardNumber.valueOf(13)));
-        cards.add(new Card(Suit.DIAMONDS, CardNumber.valueOf(14)));
+        cards.add(HEART_NINE);
+        cards.add(HEART_JACK);
+        cards.add(HEART_SEVEN);
+        cards.add(CLUB_SIX);
+        cards.add(CLUB_SEVEN);
+        cards.add(CLUB_EIGHT);
+        cards.add(DIAMOND_QUEEN);
+        cards.add(DIAMOND_KING);
+        cards.add(DIAMOND_ACE);
 
         return cards;
     }

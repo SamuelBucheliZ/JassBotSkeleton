@@ -15,7 +15,7 @@ public class ResponseWriterTest {
 
     @Test
     public void response_isSerializedCorrectly() {
-        Response response = new ChooseCard(new Card(Suit.DIAMONDS, CardNumber.QUEEN));
+        Response response = new ChooseCard(Card.DIAMOND_QUEEN);
         String responseAsJson = gson.toJson(response);
         Assert.assertEquals("{\"type\":\"CHOOSE_CARD\",\"data\":{\"color\":\"DIAMONDS\",\"number\":12}}", responseAsJson);
     }

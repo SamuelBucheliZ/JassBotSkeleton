@@ -4,6 +4,7 @@ import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FirstCardIsNotTrumpfButTrumpfOnTable extends AllowedCards {
@@ -15,18 +16,28 @@ public class FirstCardIsNotTrumpfButTrumpfOnTable extends AllowedCards {
     @Override
     public Set<Card> get() {
         Stream<Card> trumpfs = getTrumpfs();
+
         Card strongestTrumpfOnTable = getStrongestTrumpfOnTable().get();
-        Stream<Card> trumpfsThatDoNotUndertrumpf = trumpfs.filter(isStrongerThan(strongestTrumpfOnTable));
+
+        Map<Boolean, Set<Card>> trumpfPartition = trumpfs.collect(Collectors.partitioningBy(isStrongerThan(strongestTrumpfOnTable), Collectors.toSet()));
+        boolean doesNotUnderTrumpf = true;
+        Set<Card> trumpfsThatDoNotUndertrumpf = trumpfPartition.get(doesNotUnderTrumpf);
+        Set<Card> trumpfsThatDoUndertrumpf = trumpfPartition.get(!doesNotUnderTrumpf);
 
         Card firstCardOnTable = getFirstCardOnTable().get();
-        Stream<Card> cardsMatchingFirstCard = getCardsMatching(firstCardOnTable.getSuit());
+        Set<Card> cardsMatchingFirstCard = toSet(getCardsMatching(firstCardOnTable.getSuit()));
 
-        Set<Card> cardsMatchingFirstCardAndAllowedTrumpfs = toSet(Stream.concat(cardsMatchingFirstCard, trumpfsThatDoNotUndertrumpf));
+        Set<Card> cardsMatchingFirstCardAndAllowedTrumpfs = toSet(Stream.concat(cardsMatchingFirstCard.stream(), trumpfsThatDoNotUndertrumpf.stream()));
 
         if (!cardsMatchingFirstCardAndAllowedTrumpfs.isEmpty()) {
             return cardsMatchingFirstCardAndAllowedTrumpfs;
         }
 
-        return toSet(getNonTrumpfs());
+        Set<Card> myCardsWithoutUndertrumpfs = toSet(getPlayerCards().stream().filter(card -> !trumpfsThatDoUndertrumpf.contains(card)));
+        if (!myCardsWithoutUndertrumpfs.isEmpty()) {
+            return myCardsWithoutUndertrumpfs;
+        }
+
+        return getPlayerCards();
     }
 }

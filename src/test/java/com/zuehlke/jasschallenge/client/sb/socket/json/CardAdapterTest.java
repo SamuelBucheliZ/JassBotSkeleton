@@ -14,7 +14,7 @@ public class CardAdapterTest {
 
     @Test
     public void card_thatIsValid_isSerializedAndDeserializedCorrectly() {
-        Card card = new Card(Suit.SPADES, CardNumber.ACE);
+        Card card = Card.SPADE_ACE;
         String json = gson.toJson(card);
         Card fromJson = gson.fromJson(json, Card.class);
         Assert.assertEquals(card, fromJson);

@@ -1,12 +1,10 @@
 package com.zuehlke.jasschallenge.client.sb.socket.responses;
 
-import com.zuehlke.jasschallenge.client.sb.socket.messages.SessionChoice;
-
 public class ChooseSession implements Response {
     ResponseType type = ResponseType.CHOOSE_SESSION;
-    private final SessionChoice data;
+    private final SessionChoiceData data;
 
-    public ChooseSession(SessionChoice sessionChoice) {
+    public ChooseSession(SessionChoiceData sessionChoice) {
         this.data = sessionChoice;
     }
 }

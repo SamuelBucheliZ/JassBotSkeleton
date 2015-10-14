@@ -1,62 +1,73 @@
 package com.zuehlke.jasschallenge.client.sb.game;
 
 import com.google.common.base.Preconditions;
+import com.zuehlke.jasschallenge.client.sb.model.Player;
 import com.zuehlke.jasschallenge.client.sb.model.Stich;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.Strategy;
+import com.zuehlke.jasschallenge.client.sb.model.Team;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
-import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfMode;
+import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionChoice;
+import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionChoiceData;
+import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionType;
 import org.apache.log4j.Logger;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class Game {
-
     private Logger logger = Logger.getLogger(this.getClass().getName());
 
-    private final String playerName;
-    private final String sessionName;
+    private final SessionInfo sessionInfo;
     private final Strategy strategy;
 
     private GameState state;
 
-    public Game(String playerName, String sessionName, Strategy strategy) {
-        this.strategy = strategy;
+    public Game(String playerName, String sessionName, SessionChoice sessionChoice, SessionType sessionType, Strategy strategy) {
         logger.info(playerName + ": Created new game for player");
-        this.playerName = playerName;
-        this.sessionName = sessionName;
+        this.sessionInfo = new SessionInfo(playerName, sessionName, sessionChoice, sessionType);
+        this.strategy = strategy;
     }
 
-    public void startSession() {
-        strategy.onSessionStarted(state);
+    public void joinSession(Player player) {
+        // TODO: Are there any issues if players use the same name?
+        if (!sessionInfo.playerIdIsPresent() && sessionInfo.getPlayerName().equals(player.getName())) {
+            sessionInfo.setPlayerId(player.getId());
+        }
+    }
+
+    public void startSession(List<Team> teams) {
+        Preconditions.checkState(sessionInfo.playerIdIsPresent());
+        this.sessionInfo.setPlayerOrderingAndPartnerId(teams);
+        strategy.onSessionStarted(sessionInfo);
     }
 
     public void finishSession() {
-        strategy.onSessionFinished(state);
+        strategy.onSessionFinished(sessionInfo);
     }
 
     public void startGame(Trumpf trumpf) {
         state.setTrumpf(trumpf);
         strategy.onGameStarted(state);
-        log(trumpf.toString());
     }
 
     public void finishGame() {
         strategy.onGameFinished(state);
     }
 
-    public Trumpf requestTrumpf(boolean isSchiebenAllowed) {
-        Trumpf trumpf = strategy.onRequestTrumpf(state.getMyCards(), isSchiebenAllowed);
-        if (!TrumpfMode.SCHIEBE.equals(trumpf.getMode())) {
-            state.setIMadeTrumpf();
+    public Trumpf requestTrumpf(boolean isGeschoben) {
+        if (!isGeschoben) {
+            state.setCurrentPlayer(sessionInfo.getPlayerId());
         }
+        Trumpf trumpf = strategy.onRequestTrumpf(state.getMyCards(), isGeschoben);
         return trumpf;
     }
 
     public Card requestCard(List<Card> cardsOnTable) {
         Preconditions.checkArgument(state.getCardsOnTable().equals(cardsOnTable));
+        state.setCurrentPlayer(sessionInfo.getPlayerId());
         Card card = strategy.onRequestCard(state);
         state.doPlay(card);
         return card;
@@ -73,23 +84,27 @@ public class Game {
     }
 
     public void cardsDealt(Set<Card> cards) {
-        state = new GameState(cards);
+        state = new GameState(sessionInfo, cards);
     }
 
     public void stichMade(Stich stich) {
-        logger.info(playerName + ": " + stich);
-        state.startNextRound();
+        log(stich.toString());
+        state.startNextRound(stich);
     }
 
     public void log(String message) {
-        logger.info(playerName + ": " + message);
+        logger.info(sessionInfo.getPlayerName() + ": " + message);
     }
 
     public String getPlayerName() {
-        return playerName;
+        return sessionInfo.getPlayerName();
     }
 
     public String getSessionName() {
-        return sessionName;
+        return sessionInfo.getSessionName();
+    }
+
+    public SessionChoiceData getSessionChoiceData() {
+        return new SessionChoiceData(sessionInfo.getSessionChoice(), sessionInfo.getSessionName(), sessionInfo.getSessionType());
     }
 }

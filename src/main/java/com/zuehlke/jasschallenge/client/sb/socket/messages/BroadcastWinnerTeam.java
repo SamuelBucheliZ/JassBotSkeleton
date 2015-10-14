@@ -6,8 +6,15 @@ import com.zuehlke.jasschallenge.client.sb.socket.responses.Response;
 import java.util.Optional;
 
 public class BroadcastWinnerTeam implements Message {
+    private final String message;
+
+    public BroadcastWinnerTeam(String message) {
+        this.message = message;
+    }
+
     @Override
     public Optional<Response> dispatch(Game game) {
+        game.log(message);
         game.finishSession();
         return Optional.empty();
     }

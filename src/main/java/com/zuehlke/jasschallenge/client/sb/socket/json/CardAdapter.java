@@ -15,7 +15,7 @@ public class CardAdapter implements JsonSerializer<Card>, JsonDeserializer<Card>
         JsonObject jsonObject = jsonElement.getAsJsonObject();
         Suit suit = Suit.valueOf(jsonObject.get("color").getAsString());
         CardNumber cardNumber = CardNumber.valueOf(jsonObject.get("number").getAsInt());
-        return new Card(suit, cardNumber);
+        return Card.valueOf(suit, cardNumber);
     }
 
     @Override

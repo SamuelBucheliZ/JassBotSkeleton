@@ -8,15 +8,15 @@ import com.zuehlke.jasschallenge.client.sb.socket.responses.ChooseTrumpf;
 import java.util.Optional;
 
 public class RequestTrumpf implements Message {
-    private final boolean isSchiebenAllowed;
+    private final boolean isGeschoben;
 
     public RequestTrumpf(boolean isSchiebenAllowed) {
-        this.isSchiebenAllowed = isSchiebenAllowed;
+        this.isGeschoben = isSchiebenAllowed;
     }
 
     @Override
     public Optional<Response> dispatch(Game game) {
-        Trumpf trumpf = game.requestTrumpf(isSchiebenAllowed);
+        Trumpf trumpf = game.requestTrumpf(isGeschoben);
         Response response = new ChooseTrumpf(trumpf);
         return Optional.of(response);
     }

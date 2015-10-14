@@ -37,7 +37,7 @@ public class TrumpfObeabe extends Trumpf {
 
     @Override
     public Comparator<Card> getComparator() {
-        return Card::compareTo;
+        return (c1, c2) -> Integer.valueOf(c1.getNumber()).compareTo(c2.getNumber());
     }
 
     @Override

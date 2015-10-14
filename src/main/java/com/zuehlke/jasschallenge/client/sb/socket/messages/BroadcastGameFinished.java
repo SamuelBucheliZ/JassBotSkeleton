@@ -14,7 +14,7 @@ public class BroadcastGameFinished implements Message {
 
     @Override
     public Optional<Response> dispatch(Game game) {
-        game.log("Message from server: " + message);
+        game.log(message);
         game.finishGame();
         return Optional.empty();
     }

@@ -2,6 +2,8 @@ package com.zuehlke.jasschallenge.client.sb.socket.json;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import com.zuehlke.jasschallenge.client.sb.model.Player;
+import com.zuehlke.jasschallenge.client.sb.model.Team;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 import com.zuehlke.jasschallenge.client.sb.socket.messages.*;
 import com.zuehlke.jasschallenge.client.sb.model.Stich;
@@ -13,8 +15,10 @@ import java.util.*;
 public class MessageAdapter implements JsonDeserializer<Message> {
     private static final Type cardType = new TypeToken<Card>(){}.getType();
     private static final Type listOfCardsType = new TypeToken<LinkedList<Card>>(){}.getType();
+    private static final Type sessionJoinedDataType = new TypeToken<SessionJoinedData>(){}.getType();
     private static final Type setOfCardsType = new TypeToken<HashSet<Card>>(){}.getType();
     private static final Type stichType = new TypeToken<Stich>(){}.getType();
+    private static final Type teamListType = new TypeToken<List<Team>>(){}.getType();
     private static final Type trumpfType = new TypeToken<Trumpf>(){}.getType();
 
     @Override
@@ -35,21 +39,23 @@ public class MessageAdapter implements JsonDeserializer<Message> {
                 message = new BroadcastGameFinished(jsonElement.toString());
                 break;
             case BROADCAST_SESSION_JOINED:
-                message = new BroadcastSessionJoined(jsonElement.toString());
+                SessionJoinedData sessionJoinedData = jsonDeserializationContext.deserialize(data, sessionJoinedDataType);
+                message = new BroadcastSessionJoined(sessionJoinedData);
                 break;
             case BROADCAST_STICH:
                 Stich stich = jsonDeserializationContext.deserialize(data, stichType);
                 message = new BroadcastStich(stich);
                 break;
             case BROADCAST_TEAMS:
-                message = new BroadcastTeams(jsonElement.toString());
+                List<Team> teams = jsonDeserializationContext.deserialize(data, teamListType);
+                message = new BroadcastTeams(teams);
                 break;
             case BROADCAST_TRUMPF:
                 Trumpf trumpf = jsonDeserializationContext.deserialize(data, trumpfType);
                 message = new BroadcastTrumpf(trumpf);
                 break;
             case BROADCAST_WINNER_TEAM:
-                message = new BroadcastWinnerTeam();
+                message = new BroadcastWinnerTeam(jsonElement.toString());
                 break;
             case DEAL_CARDS:
                 Set<Card> cards = jsonDeserializationContext.deserialize(data, setOfCardsType);
@@ -74,8 +80,8 @@ public class MessageAdapter implements JsonDeserializer<Message> {
                 message = new RequestSessionChoice();
                 break;
             case REQUEST_TRUMPF:
-                boolean isSchiebenAllowed = !data.getAsBoolean();
-                message = new RequestTrumpf(isSchiebenAllowed);
+                boolean isGeschoben = data.getAsBoolean();
+                message = new RequestTrumpf(isGeschoben);
                 break;
             default:
                 throw new JsonParseException("Unknown message type: "  + jsonElement);

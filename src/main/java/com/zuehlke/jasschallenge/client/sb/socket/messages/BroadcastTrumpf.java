@@ -2,6 +2,7 @@ package com.zuehlke.jasschallenge.client.sb.socket.messages;
 
 import com.zuehlke.jasschallenge.client.sb.game.Game;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
+import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfMode;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.Response;
 
 import java.util.Optional;
@@ -15,7 +16,9 @@ public class BroadcastTrumpf implements Message {
 
     @Override
     public Optional<Response> dispatch(Game game) {
-        game.startGame(trumpf);
+        if (!TrumpfMode.SCHIEBE.equals(trumpf.getMode())) {
+                  game.startGame(trumpf);
+        }
         return Optional.empty();
     }
 

@@ -1,30 +1,33 @@
 package com.zuehlke.jasschallenge.client.sb.socket.json;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
+import com.zuehlke.jasschallenge.client.sb.model.Player;
+import com.zuehlke.jasschallenge.client.sb.model.Team;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
-import com.zuehlke.jasschallenge.client.sb.model.cards.CardNumber;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfMode;
-import com.zuehlke.jasschallenge.client.sb.socket.json.MessageReader;
-import com.zuehlke.jasschallenge.client.sb.socket.messages.BroadcastTrumpf;
-import com.zuehlke.jasschallenge.client.sb.socket.messages.DealCards;
-import com.zuehlke.jasschallenge.client.sb.socket.messages.Message;
-import com.zuehlke.jasschallenge.client.sb.socket.messages.RequestPlayerName;
-import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
+import com.zuehlke.jasschallenge.client.sb.socket.messages.*;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Set;
+
+import static com.zuehlke.jasschallenge.client.sb.model.cards.Card.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 public class MessageReaderTest {
 
-    private MessageReader messageReader = new MessageReader();
+    private static final Gson gson = GsonInitializer.gson;
 
     @Test
     public void requestPlayerNameMessage_thatIsValid_isReadCorrectly() {
         String messageFromServer = "{\"type\":\"REQUEST_PLAYER_NAME\"}";
 
-        Message message = messageReader.readMessage(messageFromServer);
+        Message message = gson.fromJson(messageFromServer, Message.class);
 
         Assert.assertNotNull(message);
         Assert.assertTrue(message instanceof RequestPlayerName);
@@ -35,7 +38,7 @@ public class MessageReaderTest {
         String messageFromServer = "{\"somethingElse\":\"bla\"}";
 
         try {
-            Message message = messageReader.readMessage(messageFromServer);
+            Message message = gson.fromJson(messageFromServer, Message.class);
         } catch(JsonParseException e) {
             Assert.assertEquals("Field \"type\" is missing: {\"somethingElse\":\"bla\"}", e.getMessage());
         }
@@ -45,7 +48,7 @@ public class MessageReaderTest {
     public void trumpfMessage_thatIsValid_isReadCorrectly() {
         String messageFromServer = "{\"type\" : \"BROADCAST_TRUMPF\", \"data\" : { \"mode\" : \"TRUMPF\", \"trumpfColor\" : \"SPADES\"} }";
 
-        Message message = messageReader.readMessage(messageFromServer);
+        Message message = gson.fromJson(messageFromServer, Message.class);
 
         Assert.assertTrue(message instanceof BroadcastTrumpf);
 
@@ -53,7 +56,86 @@ public class MessageReaderTest {
 
         Assert.assertEquals(TrumpfMode.TRUMPF, trumpf.getMode());
         Assert.assertEquals(Suit.SPADES, trumpf.getSuit());
+    }
 
+    @Test
+    public void broadcastTeamsMessage_thatIsvalid_isReadCorrectly() {
+        String messageFromServer = "{\n" +
+                "    \"type\" : \"BROADCAST_TEAMS\",\n" +
+                "    \"data\" : [\n" +
+                "            {\n" +
+                "                name: \"Team 1\",\n" +
+                "                players: [\n" +
+                "                    {\n" +
+                "                        name: \"Player 1\",\n" +
+                "                        id: 0\n" +
+                "                    }, {\n" +
+                "                        name: \"Player 3\",\n" +
+                "                        id: 2\n" +
+                "                    }\n" +
+                "                ]\n" +
+                "            }, {\n" +
+                "                name: \"Team 2\",\n" +
+                "                players: [\n" +
+                "                    {\n" +
+                "                        name: \"Player 2\",\n" +
+                "                        id: 1\n" +
+                "                    }, {\n" +
+                "                        name: \"Player 4\",\n" +
+                "                        id: 3\n" +
+                "                    }\n" +
+                "                ]\n" +
+                "            }\n" +
+                "        ]\n" +
+                "}";
+
+        Message message = gson.fromJson(messageFromServer, Message.class);
+
+        assertThat(message, instanceOf(BroadcastTeams.class));
+
+        List<Team> teams = ((BroadcastTeams)message).getTeams();
+
+        assertThat(teams, is(notNullValue()));
+        assertThat(teams.size(), is(2));
+
+        Team team1 = teams.get(0);
+        Team team2 = teams.get(1);
+
+        assertThat(team1.getName(), is("Team 1"));
+
+        List<Player> players1 = team1.getPlayers();
+
+        assertThat(players1, is(notNullValue()));
+        assertThat(players1.size(), is(2));
+
+        Player player1 = players1.get(0);
+        Player player3 = players1.get(1);
+
+        assertThat(player1, is(notNullValue()));
+        assertThat(player1.getId(), is(0));
+        assertThat(player1.getName(), is("Player 1"));
+
+        assertThat(player3, is(notNullValue()));
+        assertThat(player3.getId(), is(2));
+        assertThat(player3.getName(), is("Player 3"));
+
+        assertThat(team2.getName(), is("Team 2"));
+
+        List<Player> players2 = team2.getPlayers();
+
+        assertThat(players2, is(notNullValue()));
+        assertThat(players2.size(), is(2));
+
+        Player player2 = players2.get(0);
+        Player player4 = players2.get(1);
+
+        assertThat(player2, is(notNullValue()));
+        assertThat(player2.getId(), is(1));
+        assertThat(player2.getName(), is("Player 2"));
+
+        assertThat(player4, is(notNullValue()));
+        assertThat(player4.getId(), is(3));
+        assertThat(player4.getName(), is("Player 4"));
     }
 
     @Test
@@ -91,23 +173,22 @@ public class MessageReaderTest {
                 "    ]\n" +
                 "}";
 
-        Message message = messageReader.readMessage(messageFromServer);
+        Message message = gson.fromJson(messageFromServer, Message.class);
         Assert.assertTrue(message instanceof DealCards);
 
         Set<Card> cards = ((DealCards)message).getCards();
 
         final int DECK_SIZE = 9;
         Assert.assertEquals(DECK_SIZE, cards.size());
-        Assert.assertTrue(cards.contains(new Card(Suit.SPADES, CardNumber.valueOf(13))));
-        Assert.assertTrue(cards.contains(new Card(Suit.SPADES, CardNumber.KING)));
-        Assert.assertTrue(cards.contains(new Card(Suit.DIAMONDS, CardNumber.NINE)));
-        Assert.assertTrue(cards.contains(new Card(Suit.HEARTS, CardNumber.QUEEN)));
-        Assert.assertTrue(cards.contains(new Card(Suit.HEARTS, CardNumber.JACK)));
-        Assert.assertTrue(cards.contains(new Card(Suit.HEARTS, CardNumber.TEN)));
-        Assert.assertTrue(cards.contains(new Card(Suit.CLUBS, CardNumber.EIGHT)));
-        Assert.assertTrue(cards.contains(new Card(Suit.SPADES, CardNumber.JACK)));
-        Assert.assertTrue(cards.contains(new Card(Suit.HEARTS, CardNumber.NINE)));
-        Assert.assertTrue(cards.contains(new Card(Suit.CLUBS, CardNumber.NINE)));
+        Assert.assertTrue(cards.contains(SPADE_KING));
+        Assert.assertTrue(cards.contains(DIAMOND_NINE));
+        Assert.assertTrue(cards.contains(HEART_QUEEN));
+        Assert.assertTrue(cards.contains(HEART_JACK));
+        Assert.assertTrue(cards.contains(HEART_TEN));
+        Assert.assertTrue(cards.contains(CLUB_EIGHT));
+        Assert.assertTrue(cards.contains(SPADE_JACK));
+        Assert.assertTrue(cards.contains(HEART_NINE));
+        Assert.assertTrue(cards.contains(CLUB_NINE));
     }
 
 }

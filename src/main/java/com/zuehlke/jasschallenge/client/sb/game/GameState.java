@@ -1,49 +1,44 @@
 package com.zuehlke.jasschallenge.client.sb.game;
 
 import com.google.common.base.Preconditions;
-import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
-import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.rules.AllowedCards;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.rules.AllowedCardsRules;
+import com.zuehlke.jasschallenge.client.sb.model.Move;
+import com.zuehlke.jasschallenge.client.sb.model.Stich;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
+import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 
 import java.util.*;
 
 public class GameState {
+    private final SessionInfo sessionInfo;
 
-    private final Set<Card> myCards = new HashSet<>();
-    private final Stack<Card> playedCards = new Stack<>();
+    private Set<Card> myCards = new HashSet<>();
     private Optional<Trumpf> trumpf = Optional.empty();
+    private List<Move> moves = new ArrayList<>();
     private List<Card> cardsOnTable = new LinkedList<>();
-    private boolean iMadeTrumpf = false;
+    private Optional<Integer> currentPlayer = Optional.empty();
     private int round = 0;
 
-    public GameState(Set<Card> myCards) {
-        this.myCards.addAll(myCards);
+
+    public GameState(SessionInfo sessionInfo, Set<Card> myCards) {
+        this.sessionInfo = sessionInfo;
+        this.myCards = new HashSet<>(myCards);
     }
 
-    GameState(Set<Card> myCards, Stack<Card> playedCards, Optional<Trumpf> trumpf, List<Card> cardsOnTable, boolean iMadeTrumpf, int round) {
-        this.myCards.addAll(myCards);
-        this.playedCards.addAll(playedCards);
-        this.trumpf = trumpf;
-        this.cardsOnTable = new ArrayList<>(cardsOnTable);
-        this.iMadeTrumpf = iMadeTrumpf;
-        this.round = round;
-    }
-
-    public Set<Card> getMyCards() {
-        return new HashSet<>(myCards);
-    }
 
     public void undoPlay(Card card) {
-        Preconditions.checkArgument(this.playedCards.peek().equals(card));
-        this.playedCards.pop();
         this.myCards.add(card);
     }
 
     public void doPlay(Card card) {
         Preconditions.checkArgument(this.myCards.contains(card));
         this.myCards.remove(card);
-        this.playedCards.push(card);
+    }
+
+
+    public Set<Card> getMyCards() {
+        return Collections.unmodifiableSet(myCards);
     }
 
     public Trumpf getTrumpf() {
@@ -56,29 +51,28 @@ public class GameState {
     }
 
     public List<Card> getCardsOnTable() {
-        return new LinkedList<>(cardsOnTable);
+        return Collections.unmodifiableList(cardsOnTable);
     }
 
     public void addToTable(Card card) {
+        this.moves.add(new Move(currentPlayer, card));
         this.cardsOnTable.add(card);
+        if (currentPlayer.isPresent()) {
+            currentPlayer = Optional.of(sessionInfo.getNextPlayerIdFrom(currentPlayer.get()));
+        }
     }
 
-    public boolean isIMadeTrumpf() {
-        return iMadeTrumpf;
-    }
-
-    public void setIMadeTrumpf() {
-        Preconditions.checkState(!this.iMadeTrumpf);
-        this.iMadeTrumpf = true;
-    }
-
-    public void startNextRound() {
-        this.cardsOnTable.clear();
+    public void startNextRound(Stich lastStich) {
+        Preconditions.checkState(cardsOnTable.size() == Stich.STICH_SIZE);
+        cardsOnTable.clear();
+        currentPlayer = Optional.of(lastStich.getId());
         round++;
     }
 
-    public int getRound() {
-        return round;
+    public void setCurrentPlayer(int playerId) {
+        if (!this.currentPlayer.isPresent()) {
+            this.currentPlayer = Optional.of(playerId);
+        }
     }
 
     public Set<Card> getAllowedCardsToPlay() {
@@ -92,9 +86,20 @@ public class GameState {
                 "myCards=" + myCards +
                 ", trumpf=" + trumpf +
                 ", cardsOnTable=" + cardsOnTable +
-                ", iMadeTrumpf=" + iMadeTrumpf +
                 ", round=" + round +
                 '}';
+    }
+
+    public int getCurrentPlayer() {
+        return currentPlayer.get();
+    }
+
+    public EnumSet<Card> getPlayedCards() {
+        EnumSet<Card> playedCards = EnumSet.noneOf(Card.class);
+        for (Move move: moves) {
+            playedCards.add(move.getCard());
+        }
+        return playedCards;
     }
 
 }

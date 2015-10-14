@@ -13,9 +13,9 @@ public class CardsOnTableTestDataFactory {
     public List<Card> createCardsOnTableThreeSpades() {
         List<Card> cards = new LinkedList<>();
 
-        cards.add(new Card(Suit.SPADES, CardNumber.valueOf(12)));
-        cards.add(new Card(Suit.SPADES, CardNumber.valueOf(9)));
-        cards.add(new Card(Suit.SPADES, CardNumber.valueOf(8)));
+        cards.add(Card.SPADE_QUEEN);
+        cards.add(Card.SPADE_NINE);
+        cards.add(Card.SPADE_EIGHT);
 
         return cards;
     }

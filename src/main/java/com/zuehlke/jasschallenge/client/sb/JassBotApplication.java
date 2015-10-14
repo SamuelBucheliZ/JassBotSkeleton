@@ -2,6 +2,9 @@ package com.zuehlke.jasschallenge.client.sb;
 
 import java.util.concurrent.CountDownLatch;
 
+import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.MonteCarloStrategy;
+import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.RandomStrategy;
+import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.Strategy;
 import org.apache.log4j.Logger;
 
 /**
@@ -22,7 +25,13 @@ public class JassBotApplication {
             CountDownLatch countDown = new CountDownLatch(NUMBER_OF_BOT_PLAYERS);
 
             for(int i = 0; i < NUMBER_OF_BOT_PLAYERS; i++) {
-                new BotPlayer(countDown, i);
+                Strategy strategy;
+                if (i % 2 == 0) {
+                    strategy = new MonteCarloStrategy();
+                } else {
+                    strategy = new RandomStrategy();
+                }
+                new JassBotPlayer(countDown, i, strategy);
             }
 
             countDown.await();
