@@ -17,9 +17,8 @@ import org.apache.logging.log4j.Logger;
 import java.util.*;
 
 public class MonteCarloStrategy implements Strategy {
-    private static final Config conf = ConfigFactory.load().getConfig("monte-carlo-strategy");
-    private static final int NUMBER_OF_CARD_DISTRIBUTIONS = conf.getInt("NUMBER_OF_CARD_DISTRIBUTIONS");
-    private static final int NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION = conf.getInt("NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION");
+    private final int NUMBER_OF_CARD_DISTRIBUTIONS;
+    private final int NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION;
 
     private static final Logger logger = LogManager.getLogger(MonteCarloStrategy.class);
 
@@ -27,6 +26,16 @@ public class MonteCarloStrategy implements Strategy {
     private PlayerOrdering order;
     private int myId;
     private int partnerId;
+
+    public MonteCarloStrategy() {
+        this(ConfigFactory.load());
+    }
+
+    public MonteCarloStrategy(Config conf) {
+        Config config = conf.getConfig("monte-carlo-strategy");
+        this.NUMBER_OF_CARD_DISTRIBUTIONS = config.getInt("NUMBER_OF_CARD_DISTRIBUTIONS");
+        this.NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION = config.getInt("NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION");
+    }
 
     @Override
     public void onSessionStarted(SessionInfo sessionInfo) {
