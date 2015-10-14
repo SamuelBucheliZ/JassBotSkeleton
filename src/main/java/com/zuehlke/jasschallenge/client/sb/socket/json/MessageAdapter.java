@@ -2,17 +2,21 @@ package com.zuehlke.jasschallenge.client.sb.socket.json;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
-import com.zuehlke.jasschallenge.client.sb.model.Player;
+import com.zuehlke.jasschallenge.client.sb.model.Stich;
 import com.zuehlke.jasschallenge.client.sb.model.Team;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 import com.zuehlke.jasschallenge.client.sb.socket.messages.*;
-import com.zuehlke.jasschallenge.client.sb.model.Stich;
-import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Type;
 import java.util.*;
 
+
 public class MessageAdapter implements JsonDeserializer<Message> {
+    private static final Logger logger = LogManager.getLogger(MessageAdapter.class);
+
     private static final Type cardType = new TypeToken<Card>(){}.getType();
     private static final Type listOfCardsType = new TypeToken<LinkedList<Card>>(){}.getType();
     private static final Type sessionJoinedDataType = new TypeToken<SessionJoinedData>(){}.getType();
@@ -26,10 +30,17 @@ public class MessageAdapter implements JsonDeserializer<Message> {
         JsonObject jsonObject = jsonElement.getAsJsonObject();
         JsonPrimitive typePrimitive = jsonObject.getAsJsonPrimitive("type");
         if (Objects.isNull(typePrimitive)) {
+            // we expect the field type to be present for messages...
             throw new JsonParseException("Field \"type\" is missing: "  + jsonElement);
         }
         JsonElement data = jsonObject.get("data");
         Message message;
+        String messageTypeString = typePrimitive.getAsString();
+        // ...but we do not assume we know all possible message types
+        if (!EnumSet.allOf(MessageType.class).stream().map(MessageType::toString).anyMatch(s -> s.equals(messageTypeString))) {
+            logger.info("Unknown message type {}: {}", messageTypeString, jsonElement);
+            return new NullMessage();
+        }
         MessageType messageType = MessageType.valueOf(typePrimitive.getAsString());
         switch (messageType) {
             case BAD_MESSAGE:
@@ -84,7 +95,8 @@ public class MessageAdapter implements JsonDeserializer<Message> {
                 message = new RequestTrumpf(isGeschoben);
                 break;
             default:
-                throw new JsonParseException("Unknown message type: "  + jsonElement);
+                logger.info("Message type {} currently not handled: {}", messageType, jsonElement);
+                message = new NullMessage();
         }
         return message;
     }

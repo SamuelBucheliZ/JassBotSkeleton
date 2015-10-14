@@ -23,20 +23,25 @@ import java.util.concurrent.CountDownLatch;
  * One Jass player. This program can simulate multiple players.
  */
 public class JassBotPlayer {
-    private static final Config conf = ConfigFactory.load().getConfig("bot-player");
-    private static final String SERVER_URI = conf.getString("SERVER_URI");
-    private static final String SESSION_NAME = conf.getString("SESSION_NAME");
-    private static final String BOT_NAME_PREFIX = conf.getString("BOT_NAME_PREFIX");
-    private static final boolean APPEND_UUID_TO_BOT_NAME = conf.getBoolean("APPEND_UUID_TO_BOT_NAME");
-    private static final SessionChoice SESSION_CHOICE = SessionChoice.valueOf(conf.getString("SESSION_CHOICE"));
-    private static final SessionType SESSION_TYPE = SessionType.valueOf(conf.getString("SESSION_TYPE"));
 
     private static final Logger logger = LogManager.getLogger(JassBotPlayer.class);
 
     public JassBotPlayer(CountDownLatch countDown, int playerID, Strategy strategy) {
-        String playerName = BOT_NAME_PREFIX + playerID;
+        this(ConfigFactory.load(), countDown, playerID, strategy);
+    }
+
+    public JassBotPlayer(Config conf, CountDownLatch countDown, int playerID, Strategy strategy) {
+        Config config = conf.getConfig("bot-player");
+        String SERVER_URI = config.getString("SERVER_URI");
+        String SESSION_NAME = config.getString("SESSION_NAME");
+        String BOT_NAME_PREFIX = config.getString("BOT_NAME_PREFIX");
+        boolean APPEND_UUID_TO_BOT_NAME = config.getBoolean("APPEND_UUID_TO_BOT_NAME");
+        SessionChoice SESSION_CHOICE = SessionChoice.valueOf(config.getString("SESSION_CHOICE"));
+        SessionType SESSION_TYPE = SessionType.valueOf(config.getString("SESSION_TYPE"));
+
+        String playerName = BOT_NAME_PREFIX;
         if (APPEND_UUID_TO_BOT_NAME) {
-            playerName += ":" + UUID.randomUUID().hashCode();
+            playerName += playerID + ":" + UUID.randomUUID().hashCode();
         }
         logger.info("Creating bot player {} for session  {}.", playerName, SESSION_NAME);
 
@@ -49,23 +54,6 @@ public class JassBotPlayer {
         } catch (DeploymentException | URISyntaxException | IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static void main(String[] args) {
-        // TODO: Make command line arguments or something
-        int id = 0;
-        Strategy strategy = new MonteCarloStrategy();
-
-        try {
-            CountDownLatch countDown = new CountDownLatch(1);
-
-            new JassBotPlayer(countDown, id, strategy);
-
-            countDown.await();
-        } catch (InterruptedException e) {
-            logger.error("JassBotPlayer was interrupted.", e);
-        }
-
     }
 
 }

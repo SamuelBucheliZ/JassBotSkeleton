@@ -46,6 +46,15 @@ public class MessageReaderTest {
     }
 
     @Test
+    public void messageWithUnknownType_givesNullMessage() {
+        String messageFromServer = "{\"type\" : \"THIS_MESSAGE_TYPE_IS_UNKNOWN\", \"data\" : { \"mode\" : \"TRUMPF\", \"trumpfColor\" : \"SPADES\"} }";
+
+        Message message = gson.fromJson(messageFromServer, Message.class);
+
+        assertThat(message, instanceOf(NullMessage.class));
+    }
+
+    @Test
     public void trumpfMessage_thatIsValid_isReadCorrectly() {
         String messageFromServer = "{\"type\" : \"BROADCAST_TRUMPF\", \"data\" : { \"mode\" : \"TRUMPF\", \"trumpfColor\" : \"SPADES\"} }";
 
