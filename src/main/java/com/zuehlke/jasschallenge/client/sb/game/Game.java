@@ -11,14 +11,16 @@ import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionChoice;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionChoiceData;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionType;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
+
 public class Game {
-    private Logger logger = Logger.getLogger(this.getClass().getName());
+    private static final Logger logger = LogManager.getLogger(Game.class);
 
     private final SessionInfo sessionInfo;
     private final Strategy strategy;
@@ -26,7 +28,7 @@ public class Game {
     private GameState state;
 
     public Game(String playerName, String sessionName, SessionChoice sessionChoice, SessionType sessionType, Strategy strategy) {
-        logger.info(playerName + ": Created new game for player");
+        logger.info("{}: Created new game for player {}.", playerName, playerName);
         this.sessionInfo = new SessionInfo(playerName, sessionName, sessionChoice, sessionType);
         this.strategy = strategy;
     }
@@ -44,7 +46,8 @@ public class Game {
         strategy.onSessionStarted(sessionInfo);
     }
 
-    public void finishSession() {
+    public void finishSession(String message) {
+        logger.info("{}: Session finished: {}", sessionInfo.getPlayerName(), message);
         strategy.onSessionFinished(sessionInfo);
     }
 
@@ -53,7 +56,8 @@ public class Game {
         strategy.onGameStarted(state);
     }
 
-    public void finishGame() {
+    public void finishGame(String message) {
+        logger.info("{}: Game finished for player {}.", sessionInfo.getPlayerName(), message);
         strategy.onGameFinished(state);
     }
 
@@ -80,6 +84,7 @@ public class Game {
     }
 
     public void cardRejected(Card card) {
+        logger.error("{}: Card {} rejected.", sessionInfo.getPlayerName(), card);
         state.undoPlay(card);
     }
 
@@ -88,12 +93,8 @@ public class Game {
     }
 
     public void stichMade(Stich stich) {
-        log(stich.toString());
+        logger.debug("{}: {}", sessionInfo.getPlayerName(), stich.toString());
         state.startNextRound(stich);
-    }
-
-    public void log(String message) {
-        logger.info(sessionInfo.getPlayerName() + ": " + message);
     }
 
     public String getPlayerName() {

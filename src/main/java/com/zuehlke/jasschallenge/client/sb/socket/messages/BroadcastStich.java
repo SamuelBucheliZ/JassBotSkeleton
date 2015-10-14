@@ -18,4 +18,8 @@ public class BroadcastStich implements Message {
         game.stichMade(stich);
         return Optional.empty();
     }
+
+    public Stich getStich() {
+        return stich;
+    }
 }

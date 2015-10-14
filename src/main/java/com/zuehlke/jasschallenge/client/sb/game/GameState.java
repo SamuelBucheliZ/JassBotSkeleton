@@ -65,7 +65,7 @@ public class GameState {
     public void startNextRound(Stich lastStich) {
         Preconditions.checkState(cardsOnTable.size() == Stich.STICH_SIZE);
         cardsOnTable.clear();
-        currentPlayer = Optional.of(lastStich.getId());
+        currentPlayer = Optional.of(lastStich.getPlayerId());
         round++;
     }
 
@@ -80,26 +80,21 @@ public class GameState {
         return allowedCards.get();
     }
 
-    @Override
-    public String toString() {
-        return "GameState " + System.identityHashCode(this) + " {" +
-                "myCards=" + myCards +
-                ", trumpf=" + trumpf +
-                ", cardsOnTable=" + cardsOnTable +
-                ", round=" + round +
-                '}';
-    }
-
     public int getCurrentPlayer() {
         return currentPlayer.get();
     }
 
-    public EnumSet<Card> getPlayedCards() {
-        EnumSet<Card> playedCards = EnumSet.noneOf(Card.class);
+    public Set<Card> getPlayedCards() {
+        Set<Card> playedCards = new HashSet<>();
         for (Move move: moves) {
             playedCards.add(move.getCard());
         }
         return playedCards;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("GameState{myCards=%s, trumpf=%s, cardsOnTable=%s, round=%d}", myCards, trumpf, cardsOnTable, round);
     }
 
 }

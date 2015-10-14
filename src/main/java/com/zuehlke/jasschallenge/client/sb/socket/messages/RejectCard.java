@@ -16,7 +16,6 @@ public class RejectCard implements Message {
     @Override
     public Optional<Response> dispatch(Game game) {
         game.cardRejected(rejectedCard);
-        game.log("Card rejected: " + rejectedCard);
         return Optional.empty();
     }
 }

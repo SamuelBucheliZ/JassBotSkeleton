@@ -6,9 +6,10 @@ import com.zuehlke.jasschallenge.client.sb.game.Game;
 import com.zuehlke.jasschallenge.client.sb.socket.messages.Message;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.Response;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.websocket.*;
-import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -22,7 +23,7 @@ public class JassBotClientEndpoint {
 
     private static final Gson gson = GsonInitializer.gson;
 
-    private final Logger logger = Logger.getLogger(this.getClass().getName());
+    private static final Logger logger = LogManager.getLogger(JassBotClientEndpoint.class);
 
     private final CountDownLatch countDown;
 
@@ -35,7 +36,7 @@ public class JassBotClientEndpoint {
 
     @OnOpen
     public void onOpen(Session session) {
-        logger.info(game.getPlayerName() + ": Opened connection to server. Session: " + session.getId());
+        logger.info("{}: Opened connection to server. Session: {}.", game.getPlayerName(), session.getId());
     }
 
     /**
@@ -54,14 +55,14 @@ public class JassBotClientEndpoint {
 
     @OnClose
     public void onClose(Session session, CloseReason closeReason) {
-        logger.info(String.format("%s: Session %s close because of %s", game.getPlayerName(), session.getId(), closeReason));
+        logger.info("{}: Session {} closed because of {}.", game.getPlayerName(), session.getId(), closeReason);
         countDown.countDown();
     }
 
     @OnError
     public void onError(Throwable t) {
         ExceptionUtils.printRootCauseStackTrace(t);
-        logger.error(game.getPlayerName() + ": Error " + t.getMessage());
+        logger.error(String.format("%s: Error.", game.getPlayerName()), t);
     }
 
     private void sendResponse(Response response, Session session) {
@@ -69,7 +70,7 @@ public class JassBotClientEndpoint {
         try {
             session.getBasicRemote().sendText(responseAsJson);
         } catch (IOException e) {
-            logger.error("Could not send onMessage: " + responseAsJson, e);
+            logger.error(String.format("%s: Could not send response %s to message.", game.getPlayerName(), responseAsJson), e);
         }
     }
 

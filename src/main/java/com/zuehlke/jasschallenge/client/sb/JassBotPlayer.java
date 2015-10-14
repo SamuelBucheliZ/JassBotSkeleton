@@ -8,7 +8,8 @@ import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.Strategy;
 import com.zuehlke.jasschallenge.client.sb.socket.JassBotClientEndpoint;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionChoice;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionType;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.glassfish.tyrus.client.ClientManager;
 
 import javax.websocket.DeploymentException;
@@ -28,12 +29,12 @@ public class JassBotPlayer {
     private static final SessionChoice SESSION_CHOICE = SessionChoice.valueOf(conf.getString("SESSION_CHOICE"));
     private static final SessionType SESSION_TYPE = SessionType.valueOf(conf.getString("SESSION_TYPE"));
 
-    private Logger logger = Logger.getLogger(this.getClass());
+    private static final Logger logger = LogManager.getLogger(JassBotPlayer.class);
 
     public JassBotPlayer(CountDownLatch countDown, int playerID, Strategy strategy) {
         //String playerName = BOT_NAME_PREFIX + playerID + ":" + UUID.randomUUID().hashCode();
         String playerName = BOT_NAME_PREFIX + playerID;
-        logger.info("Creating bot player " + playerName + " for session " + SESSION_NAME);
+        logger.info("Creating bot player {} for session  {}.", playerName, SESSION_NAME);
 
         Game game = new Game(playerName, SESSION_NAME, SESSION_CHOICE, SESSION_TYPE, strategy);
 
@@ -58,7 +59,7 @@ public class JassBotPlayer {
 
             countDown.await();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("JassBotPlayer was interrupted.", e);
         }
 
     }

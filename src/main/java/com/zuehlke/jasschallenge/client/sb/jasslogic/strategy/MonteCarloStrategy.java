@@ -11,7 +11,8 @@ import com.zuehlke.jasschallenge.client.sb.model.Stich;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.*;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
@@ -20,11 +21,7 @@ public class MonteCarloStrategy implements Strategy {
     private static final int NUMBER_OF_CARD_DISTRIBUTIONS = conf.getInt("NUMBER_OF_CARD_DISTRIBUTIONS");
     private static final int NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION = conf.getInt("NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION");
 
-    private Logger logger = Logger.getLogger(this.getClass().getName());
-
-    private void log(String format, Object... args) {
-        logger.info(String.format(format, args));
-    }
+    private static final Logger logger = LogManager.getLogger(MonteCarloStrategy.class);
 
     private Random rand = new Random();
     private PlayerOrdering order;
@@ -166,15 +163,25 @@ public class MonteCarloStrategy implements Strategy {
 
     @Override
     public Card onRequestCard(GameState state) {
+
         Preconditions.checkArgument(state.getCurrentPlayer() == myId);
 
         Map<Card, CardEvaluation> evaluation = new HashMap<>();
 
-        Set<Card> allowedCards = AllowedCardsRules.getFor(state).get();
+        Set<Card> allowedCards = state.getAllowedCardsToPlay();
+        Set<Card> playedCards = state.getPlayedCards();
+        EnumSet<Card> playedCardsEnumSet;
+        if (playedCards.isEmpty()) {
+            playedCardsEnumSet = EnumSet.noneOf(Card.class);
+        } else {
+            playedCardsEnumSet = EnumSet.copyOf(playedCards);
+        }
+
+
         for (Card card: allowedCards) {
             evaluation.put(card, new CardEvaluation());
             for (int i = 0; i < NUMBER_OF_CARD_DISTRIBUTIONS; i++) {
-                CardDistribution cardDistribution = distributeCards(state.getMyCards(), state.getCardsOnTable(), state.getPlayedCards(), state.getCurrentPlayer());
+                CardDistribution cardDistribution = distributeCards(state.getMyCards(), state.getCardsOnTable(), playedCardsEnumSet, state.getCurrentPlayer());
                 for (int j = 0; j < NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION; j++) {
                     CardDistribution cards = new CardDistribution(cardDistribution);
                     cards.get(myId).remove(card);
@@ -189,6 +196,7 @@ public class MonteCarloStrategy implements Strategy {
         int maxPoints = evaluation.values().stream().mapToInt(CardEvaluation::getOurPoints).max().getAsInt();
         Card chosenCard = evaluation.entrySet().stream().filter(entry -> entry.getValue().getOurPoints() == maxPoints).map(Map.Entry::getKey)
                 .min((trumpf1, trumpf2) -> Integer.valueOf(evaluation.get(trumpf1).getTheirPoints()).compareTo(evaluation.get(trumpf2).getTheirPoints())).get();
+
         return chosenCard;
     }
 

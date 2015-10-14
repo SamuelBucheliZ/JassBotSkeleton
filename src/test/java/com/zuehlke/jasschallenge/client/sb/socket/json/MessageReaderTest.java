@@ -3,6 +3,7 @@ package com.zuehlke.jasschallenge.client.sb.socket.json;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.zuehlke.jasschallenge.client.sb.model.Player;
+import com.zuehlke.jasschallenge.client.sb.model.Stich;
 import com.zuehlke.jasschallenge.client.sb.model.Team;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
@@ -189,6 +190,62 @@ public class MessageReaderTest {
         Assert.assertTrue(cards.contains(SPADE_JACK));
         Assert.assertTrue(cards.contains(HEART_NINE));
         Assert.assertTrue(cards.contains(CLUB_NINE));
+    }
+
+    @Test
+    public void broadcastStichMessage_thatIsValid_isReadCorrectly() {
+        String messageFromServer = "{\n" +
+                "    \"type\" : \"BROADCAST_STICH\",\n" +
+                "    \"data\" : {\n" +
+                "        \"name\" : \"Client 2\",\n" +
+                "        \"id\" : 1,\n" +
+                "        \"playedCards\" : [{\n" +
+                "                \"number\" : 13,\n" +
+                "                \"color\" : \"SPADES\"\n" +
+                "            }, {\n" +
+                "                \"number\" : 9,\n" +
+                "                \"color\" : \"SPADES\"\n" +
+                "            }, {\n" +
+                "                \"number\" : 12,\n" +
+                "                \"color\" : \"SPADES\"\n" +
+                "            }, {\n" +
+                "                \"number\" : 6,\n" +
+                "                \"color\" : \"SPADES\"\n" +
+                "            }\n" +
+                "        ],\n" +
+                "        \"teams\" : [{\n" +
+                "                \"name\" : \"Team 2\",\n" +
+                "                \"points\" : 42,\n" +
+                "                \"currentRoundPoints\" : 42\n" +
+                "            }, {\n" +
+                "                \"name\" : \"Team 1\",\n" +
+                "                \"points\" : 0,\n" +
+                "                \"currentRoundPoints\" : 0\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    }\n" +
+                "}";
+
+        Message message = gson.fromJson(messageFromServer, Message.class);
+
+        assertThat(message, instanceOf(BroadcastStich.class));
+
+        Stich stich = ((BroadcastStich)message).getStich();
+
+        assertThat(stich.getPlayerName(), is("Client 2"));
+        assertThat(stich.getPlayerId(), is(1));
+        assertThat(stich.getPlayedCards().size(), is(4));
+        assertThat(stich.getPlayedCards(), hasItem(SPADE_KING));
+        assertThat(stich.getPlayedCards(), hasItem(SPADE_NINE));
+        assertThat(stich.getPlayedCards(), hasItem(SPADE_QUEEN));
+        assertThat(stich.getPlayedCards(), hasItem(SPADE_SIX));
+        assertThat(stich.getTeams().size(), is(2));
+        assertThat(stich.getTeams().get(0).getName(), is("Team 2"));
+        assertThat(stich.getTeams().get(0).getPoints(), is(42));
+        assertThat(stich.getTeams().get(0).getCurrentRoundPoints(), is(42));
+        assertThat(stich.getTeams().get(1).getName(), is("Team 1"));
+        assertThat(stich.getTeams().get(1).getPoints(), is(0));
+        assertThat(stich.getTeams().get(1).getCurrentRoundPoints(), is(0));
     }
 
 }

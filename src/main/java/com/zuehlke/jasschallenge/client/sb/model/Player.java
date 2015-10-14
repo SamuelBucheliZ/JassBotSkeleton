@@ -1,9 +1,5 @@
 package com.zuehlke.jasschallenge.client.sb.model;
 
-import com.google.common.base.Preconditions;
-
-import java.util.Optional;
-
 public class Player {
     private final int id;
     private final String name;
