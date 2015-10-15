@@ -48,6 +48,7 @@ public class Game {
 
     public void finishSession(String message) {
         logger.info("{}: Session finished: {}", sessionInfo.getPlayerName(), message);
+        // TODO: Reset player order and session info?
         strategy.onSessionFinished(sessionInfo);
     }
 
@@ -107,5 +108,9 @@ public class Game {
 
     public SessionChoiceData getSessionChoiceData() {
         return new SessionChoiceData(sessionInfo.getSessionChoice(), sessionInfo.getSessionName(), sessionInfo.getSessionType());
+    }
+
+    public void log(String message) {
+        logger.info("{}: {}", sessionInfo.getPlayerName(), message);
     }
 }

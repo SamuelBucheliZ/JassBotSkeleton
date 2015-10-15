@@ -3,7 +3,6 @@ package com.zuehlke.jasschallenge.client.sb;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.MonteCarloStrategy;
-import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.RandomStrategy;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.Strategy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

@@ -57,6 +57,12 @@ public class MessageAdapter implements JsonDeserializer<Message> {
                 Stich stich = jsonDeserializationContext.deserialize(data, stichType);
                 message = new BroadcastStich(stich);
                 break;
+            case BROADCAST_TOURNAMENT_STARTED:
+                message = new BroadCastTournamentStarted(jsonElement.toString());
+                break;
+            case BROADCAST_TOURNAMENT_RANKING_TABLE:
+                message = new BroadCastTournamentRankingTable(jsonElement.toString());
+                break;
             case BROADCAST_TEAMS:
                 List<Team> teams = jsonDeserializationContext.deserialize(data, teamListType);
                 message = new BroadcastTeams(teams);

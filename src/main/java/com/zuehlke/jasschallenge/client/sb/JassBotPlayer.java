@@ -3,7 +3,6 @@ package com.zuehlke.jasschallenge.client.sb;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.zuehlke.jasschallenge.client.sb.game.Game;
-import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.MonteCarloStrategy;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.Strategy;
 import com.zuehlke.jasschallenge.client.sb.socket.JassBotClientEndpoint;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionChoice;
@@ -23,6 +22,12 @@ import java.util.concurrent.CountDownLatch;
  * One Jass player. This program can simulate multiple players.
  */
 public class JassBotPlayer {
+    private final String SERVER_URI;
+    private final String SESSION_NAME;
+    private final String BOT_NAME_PREFIX;
+    private final boolean APPEND_UUID_TO_BOT_NAME;
+    private final SessionChoice SESSION_CHOICE;
+    private final SessionType SESSION_TYPE;
 
     private static final Logger logger = LogManager.getLogger(JassBotPlayer.class);
 
@@ -32,12 +37,12 @@ public class JassBotPlayer {
 
     public JassBotPlayer(Config conf, CountDownLatch countDown, int playerID, Strategy strategy) {
         Config config = conf.getConfig("bot-player");
-        String SERVER_URI = config.getString("SERVER_URI");
-        String SESSION_NAME = config.getString("SESSION_NAME");
-        String BOT_NAME_PREFIX = config.getString("BOT_NAME_PREFIX");
-        boolean APPEND_UUID_TO_BOT_NAME = config.getBoolean("APPEND_UUID_TO_BOT_NAME");
-        SessionChoice SESSION_CHOICE = SessionChoice.valueOf(config.getString("SESSION_CHOICE"));
-        SessionType SESSION_TYPE = SessionType.valueOf(config.getString("SESSION_TYPE"));
+        this.SERVER_URI = config.getString("SERVER_URI");
+        this.SESSION_NAME = config.getString("SESSION_NAME");
+        this.BOT_NAME_PREFIX = config.getString("BOT_NAME_PREFIX");
+        this.APPEND_UUID_TO_BOT_NAME = config.getBoolean("APPEND_UUID_TO_BOT_NAME");
+        this.SESSION_CHOICE = SessionChoice.valueOf(config.getString("SESSION_CHOICE"));
+        this.SESSION_TYPE = SessionType.valueOf(config.getString("SESSION_TYPE"));
 
         String playerName = BOT_NAME_PREFIX;
         if (APPEND_UUID_TO_BOT_NAME) {

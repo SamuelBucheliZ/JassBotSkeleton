@@ -3,8 +3,6 @@ package com.zuehlke.jasschallenge.client.sb.socket.json;
 import com.google.gson.Gson;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.ChooseCard;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
-import com.zuehlke.jasschallenge.client.sb.model.cards.CardNumber;
-import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 import com.zuehlke.jasschallenge.client.sb.socket.json.GsonInitializer;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.Response;
 import org.junit.Assert;

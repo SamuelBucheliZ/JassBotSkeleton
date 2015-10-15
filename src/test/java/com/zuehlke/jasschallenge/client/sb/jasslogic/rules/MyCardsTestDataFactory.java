@@ -1,8 +1,6 @@
 package com.zuehlke.jasschallenge.client.sb.jasslogic.rules;
 
-import com.zuehlke.jasschallenge.client.sb.model.cards.CardNumber;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
-import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 
 import java.util.Arrays;
 import java.util.HashSet;

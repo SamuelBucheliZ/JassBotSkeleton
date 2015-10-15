@@ -9,6 +9,7 @@ import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class GameState {
     private final SessionInfo sessionInfo;
@@ -20,12 +21,10 @@ public class GameState {
     private Optional<Integer> currentPlayer = Optional.empty();
     private int round = 0;
 
-
     public GameState(SessionInfo sessionInfo, Set<Card> myCards) {
         this.sessionInfo = sessionInfo;
         this.myCards = new HashSet<>(myCards);
     }
-
 
     public void undoPlay(Card card) {
         this.myCards.add(card);
@@ -35,7 +34,6 @@ public class GameState {
         Preconditions.checkArgument(this.myCards.contains(card));
         this.myCards.remove(card);
     }
-
 
     public Set<Card> getMyCards() {
         return Collections.unmodifiableSet(myCards);
@@ -85,11 +83,12 @@ public class GameState {
     }
 
     public Set<Card> getPlayedCards() {
-        Set<Card> playedCards = new HashSet<>();
-        for (Move move: moves) {
-            playedCards.add(move.getCard());
-        }
+        Set<Card> playedCards = moves.stream().map(Move::getCard).collect(Collectors.toSet());
         return playedCards;
+    }
+
+    public int getRound() {
+        return round;
     }
 
     @Override

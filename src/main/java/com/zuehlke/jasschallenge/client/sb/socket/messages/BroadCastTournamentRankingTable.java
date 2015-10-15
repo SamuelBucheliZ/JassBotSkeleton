@@ -5,10 +5,11 @@ import com.zuehlke.jasschallenge.client.sb.socket.responses.Response;
 
 import java.util.Optional;
 
-public class BadMessage implements Message {
+
+public class BroadCastTournamentRankingTable implements Message {
     private final String message;
 
-    public BadMessage(String message) {
+    public BroadCastTournamentRankingTable(String message) {
         this.message = message;
     }
 

@@ -14,7 +14,7 @@ public class PlayerOrderingTest {
 
     @Test
     public void givenTeamList_isCorrectlyConvertedToPlayerOrdering() {
-        List<Team> teams = gameDataFactory.createTeamList();
+        List<Team> teams = gameDataFactory.createTeamListWithPlayerOrder2031();
 
         PlayerOrdering order = PlayerOrdering.fromTeamList(teams);
 
