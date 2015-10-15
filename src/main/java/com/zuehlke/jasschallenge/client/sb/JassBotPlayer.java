@@ -19,9 +19,10 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * One Jass player. This program can simulate multiple players.
+ * One Jass player, creates a game and an endpoint (websocket client) dispatching messages to the game.
  */
 public class JassBotPlayer {
+    // configurable in application.conf
     private final String SERVER_URI;
     private final String SESSION_NAME;
     private final String BOT_NAME_PREFIX;
@@ -31,10 +32,12 @@ public class JassBotPlayer {
 
     private static final Logger logger = LogManager.getLogger(JassBotPlayer.class);
 
+    // load and use default configuration
     public JassBotPlayer(CountDownLatch countDown, int playerID, Strategy strategy) {
         this(ConfigFactory.load(), countDown, playerID, strategy);
     }
 
+    // use custom configuration
     public JassBotPlayer(Config conf, CountDownLatch countDown, int playerID, Strategy strategy) {
         Config config = conf.getConfig("bot-player");
         this.SERVER_URI = config.getString("SERVER_URI");
@@ -44,11 +47,12 @@ public class JassBotPlayer {
         this.SESSION_CHOICE = SessionChoice.valueOf(config.getString("SESSION_CHOICE"));
         this.SESSION_TYPE = SessionType.valueOf(config.getString("SESSION_TYPE"));
 
+        // in tournament mode, both players should have the exactly same name
         String playerName = BOT_NAME_PREFIX;
         if (APPEND_UUID_TO_BOT_NAME) {
             playerName += playerID + ":" + UUID.randomUUID().hashCode();
         }
-        logger.info("Creating bot player {} for session  {}.", playerName, SESSION_NAME);
+        logger.info("Creating bot player {} for session {}.", playerName, SESSION_NAME);
 
         Game game = new Game(playerName, SESSION_NAME, SESSION_CHOICE, SESSION_TYPE, strategy);
 

@@ -1,11 +1,13 @@
 package com.zuehlke.jasschallenge.client.sb.game;
 
+import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.Strategy;
 import com.zuehlke.jasschallenge.client.sb.model.Player;
 import com.zuehlke.jasschallenge.client.sb.model.Team;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionChoice;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionType;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class GameDataFactory {

@@ -5,9 +5,12 @@ import com.zuehlke.jasschallenge.client.sb.model.Player;
 import com.zuehlke.jasschallenge.client.sb.model.Stich;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.Strategy;
 import com.zuehlke.jasschallenge.client.sb.model.Team;
+import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
+import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfMode;
+import com.zuehlke.jasschallenge.client.sb.socket.messages.PointsInformation;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionChoice;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionChoiceData;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionType;
@@ -15,8 +18,7 @@ import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionType;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 public class Game {
@@ -26,39 +28,46 @@ public class Game {
     private final Strategy strategy;
 
     private GameState state;
+    private boolean previousCardChoiceRejected = false;
 
     public Game(String playerName, String sessionName, SessionChoice sessionChoice, SessionType sessionType, Strategy strategy) {
-        logger.info("{}: Created new game for player {}.", playerName, playerName);
+        logger.debug("{}: Created new game for player {} and session {}.", playerName, playerName, sessionName);
         this.sessionInfo = new SessionInfo(playerName, sessionName, sessionChoice, sessionType);
         this.strategy = strategy;
     }
 
     public void joinSession(Player player) {
-        // TODO: Are there any issues if players use the same name?
+        /* WARNING: This is a bit of a hack as the player id is not properly communicated to the player.
+         * We assume that BroadcastSessionJoined messages are issued in order, and also reset playerId when sending
+         * our session choice (see getSessionChoiceData() ) in case of bots using the same name
+         * (which still might be an issue, though...).
+         */
         if (!sessionInfo.playerIdIsPresent() && sessionInfo.getPlayerName().equals(player.getName())) {
             sessionInfo.setPlayerId(player.getId());
+            logger.info("{}: Joined session {} with playerId {}.", sessionInfo.getPlayerName(), sessionInfo.getSessionName(), sessionInfo.getPlayerId());
         }
     }
 
     public void startSession(List<Team> teams) {
-        Preconditions.checkState(sessionInfo.playerIdIsPresent());
         this.sessionInfo.setPlayerOrderingAndPartnerId(teams);
         strategy.onSessionStarted(sessionInfo);
+        logger.debug("{}: Started session with teams {}.", sessionInfo.getPlayerName(), teams);
     }
 
-    public void finishSession(String message) {
-        logger.info("{}: Session finished: {}", sessionInfo.getPlayerName(), message);
-        // TODO: Reset player order and session info?
+    public void finishSession(PointsInformation winningTeamPointsInformation) {
+        logger.info("{}: Session finished, team {} won with {} points.", sessionInfo.getPlayerName(), winningTeamPointsInformation.getTeamName(), winningTeamPointsInformation.getPoints());
         strategy.onSessionFinished(sessionInfo);
+        sessionInfo.resetPlayerOrderingAndPartnerId();
     }
 
     public void startGame(Trumpf trumpf) {
         state.setTrumpf(trumpf);
         strategy.onGameStarted(state);
+        logger.debug("{}: Started game with trumpf {}.", sessionInfo.getPlayerName(), trumpf);
     }
 
-    public void finishGame(String message) {
-        logger.info("{}: Game finished for player {}.", sessionInfo.getPlayerName(), message);
+    public void finishGame(List<PointsInformation> pointsInformation) {
+        logger.info("{}: Game finished, with {} and {}. ", sessionInfo.getPlayerName(), pointsInformation.get(0), pointsInformation.get(1));
         strategy.onGameFinished(state);
     }
 
@@ -67,12 +76,31 @@ public class Game {
             state.setCurrentPlayer(sessionInfo.getPlayerId());
         }
         Trumpf trumpf = strategy.onRequestTrumpf(state.getMyCards(), isGeschoben);
+
+        // safeguard against illegal choice of trumpf mode SCHIEBE
+        if (isGeschoben && TrumpfMode.SCHIEBE.equals(trumpf.getMode())) {
+            logger.warn("{}: Trumpf {} can not be selected by strategy {}, as isGeschoben={}, choosing random, legal trumpf instead.", sessionInfo.getPlayerName(), trumpf, strategy, isGeschoben);
+            List<Trumpf> validTrumpfs = Arrays.asList(Trumpf.from(TrumpfMode.UNDEUFE), Trumpf.from(TrumpfMode.OBEABE), Trumpf.from(Suit.CLUBS), Trumpf.from(Suit.DIAMONDS), Trumpf.from(Suit.HEARTS), Trumpf.from(Suit.SPADES));
+            int index = (new java.util.Random()).nextInt(validTrumpfs.size());
+            trumpf = validTrumpfs.get(index);
+        }
+
         return trumpf;
     }
 
     public Card requestCard(List<Card> cardsOnTable) {
         Preconditions.checkArgument(state.getCardsOnTable().equals(cardsOnTable));
         state.setCurrentPlayer(sessionInfo.getPlayerId());
+
+        // safeguard against strategies repeatedly selecting invalid cards, thereby effectively blocking the game
+        if (previousCardChoiceRejected) {
+            logger.warn("{}: The card previously selected by strategy {} was rejected, choosing random card instead.", sessionInfo.getPlayerName(), strategy);
+            Set<Card> allowedCards = state.getAllowedCardsToPlay();
+            int index = new java.util.Random().nextInt(allowedCards.size());
+            previousCardChoiceRejected = false;
+            return (new ArrayList<>(allowedCards)).get(index);
+        }
+
         Card card = strategy.onRequestCard(state);
         state.doPlay(card);
         return card;
@@ -85,11 +113,12 @@ public class Game {
     }
 
     public void cardRejected(Card card) {
-        logger.error("{}: Card {} rejected.", sessionInfo.getPlayerName(), card);
+        logger.warn("{}: Card {} rejected.", sessionInfo.getPlayerName(), card);
         state.undoPlay(card);
+        previousCardChoiceRejected = true;
     }
 
-    public void cardsDealt(Set<Card> cards) {
+    public void cardsDealt(Collection<Card> cards) {
         state = new GameState(sessionInfo, cards);
     }
 
@@ -102,11 +131,9 @@ public class Game {
         return sessionInfo.getPlayerName();
     }
 
-    public String getSessionName() {
-        return sessionInfo.getSessionName();
-    }
-
     public SessionChoiceData getSessionChoiceData() {
+        // see joinSession() above...
+        sessionInfo.resetPlayerId();
         return new SessionChoiceData(sessionInfo.getSessionChoice(), sessionInfo.getSessionName(), sessionInfo.getSessionType());
     }
 

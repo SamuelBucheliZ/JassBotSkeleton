@@ -35,6 +35,15 @@ public abstract class Trumpf {
         return trumpf;
     }
 
+    public static Trumpf from(TrumpfMode mode) {
+        Preconditions.checkArgument(!TrumpfMode.TRUMPF.equals(mode));
+        return from(mode, null);
+    }
+
+    public static Trumpf from(Suit suit) {
+        return from(TrumpfMode.TRUMPF, suit);
+    }
+
     private final TrumpfMode mode;
 
     @SerializedName("trumpfColor")

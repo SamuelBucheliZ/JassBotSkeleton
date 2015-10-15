@@ -19,6 +19,8 @@ public class MessageAdapter implements JsonDeserializer<Message> {
 
     private static final Type cardType = new TypeToken<Card>(){}.getType();
     private static final Type listOfCardsType = new TypeToken<LinkedList<Card>>(){}.getType();
+    private static final Type listOfPointsInformationType = new TypeToken<LinkedList<PointsInformation>>(){}.getType();
+    private static final Type pointsInformationType = new TypeToken<PointsInformation>(){}.getType();
     private static final Type sessionJoinedDataType = new TypeToken<SessionJoinedData>(){}.getType();
     private static final Type setOfCardsType = new TypeToken<HashSet<Card>>(){}.getType();
     private static final Type stichType = new TypeToken<Stich>(){}.getType();
@@ -47,7 +49,8 @@ public class MessageAdapter implements JsonDeserializer<Message> {
                 message = new BadMessage(jsonElement.toString());
                 break;
             case BROADCAST_GAME_FINISHED:
-                message = new BroadcastGameFinished(jsonElement.toString());
+                List<PointsInformation> gameFinishedPointsInformation = jsonDeserializationContext.deserialize(data, listOfPointsInformationType);
+                message = new BroadcastGameFinished(gameFinishedPointsInformation);
                 break;
             case BROADCAST_SESSION_JOINED:
                 SessionJoinedData sessionJoinedData = jsonDeserializationContext.deserialize(data, sessionJoinedDataType);
@@ -64,15 +67,16 @@ public class MessageAdapter implements JsonDeserializer<Message> {
                 message = new BroadCastTournamentRankingTable(jsonElement.toString());
                 break;
             case BROADCAST_TEAMS:
-                List<Team> teams = jsonDeserializationContext.deserialize(data, teamListType);
-                message = new BroadcastTeams(teams);
+                List<Team> broadCastTeams = jsonDeserializationContext.deserialize(data, teamListType);
+                message = new BroadcastTeams(broadCastTeams);
                 break;
             case BROADCAST_TRUMPF:
                 Trumpf trumpf = jsonDeserializationContext.deserialize(data, trumpfType);
                 message = new BroadcastTrumpf(trumpf);
                 break;
             case BROADCAST_WINNER_TEAM:
-                message = new BroadcastWinnerTeam(jsonElement.toString());
+                PointsInformation winningTeamPointsInformation = jsonDeserializationContext.deserialize(data, pointsInformationType);
+                message = new BroadcastWinnerTeam(winningTeamPointsInformation);
                 break;
             case DEAL_CARDS:
                 Set<Card> cards = jsonDeserializationContext.deserialize(data, setOfCardsType);

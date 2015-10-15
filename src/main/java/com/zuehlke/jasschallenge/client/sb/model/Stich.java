@@ -2,6 +2,7 @@ package com.zuehlke.jasschallenge.client.sb.model;
 
 import com.google.gson.annotations.SerializedName;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
+import com.zuehlke.jasschallenge.client.sb.socket.messages.PointsInformation;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,13 +16,14 @@ public class Stich {
     @SerializedName("id")
     private final int playerId;
     private final List<Card> playedCards;
-    private final List<Team> teams;
+    @SerializedName("teams")
+    private final List<PointsInformation> pointsInformation;
 
-    public Stich(String name, int playerId, List<Card> playedCards, List<Team> teams) {
+    public Stich(String name, int playerId, List<Card> playedCards, List<PointsInformation> pointsInformation) {
         this.playerName = name;
         this.playerId = playerId;
         this.playedCards = new ArrayList<>(playedCards);
-        this.teams = new ArrayList<>(teams);
+        this.pointsInformation = new ArrayList<>(pointsInformation);
     }
 
     public int getPlayerId() {
@@ -30,7 +32,7 @@ public class Stich {
 
     @Override
     public String toString() {
-        return String.format("Stich{playerName='%s', playerId=%d, playedCards=%s, teams=%s}", playerName, playerId, playedCards, teams);
+        return String.format("Stich{playerName='%s', playerId=%d, playedCards=%s, pointsInformation=%s}", playerName, playerId, playedCards, pointsInformation);
     }
 
     public String getPlayerName() {
@@ -41,7 +43,7 @@ public class Stich {
         return Collections.unmodifiableList(playedCards);
     }
 
-    public List<Team> getTeams() {
-        return Collections.unmodifiableList(teams);
+    public List<PointsInformation> getPointsInformation() {
+        return Collections.unmodifiableList(pointsInformation);
     }
 }

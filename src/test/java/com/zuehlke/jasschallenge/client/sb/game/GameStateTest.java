@@ -6,6 +6,7 @@ import com.zuehlke.jasschallenge.client.sb.model.Team;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfSuit;
+import com.zuehlke.jasschallenge.client.sb.socket.messages.PointsInformation;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -46,7 +47,10 @@ public class GameStateTest {
 
         assertThat(gameState.getCardsOnTable(), is(Arrays.asList(HEART_NINE, HEART_EIGHT, HEART_JACK, HEART_SEVEN)));
 
-        Stich stich = new Stich(sessionInfo.getPlayerName(), sessionInfo.getPlayerId(), Arrays.asList(HEART_NINE, HEART_EIGHT, HEART_JACK, HEART_SEVEN), teamList);
+        PointsInformation team0Points = new PointsInformation("team0", 34, 999);
+        PointsInformation team1Points = new PointsInformation("team0", 0, 1001);
+
+        Stich stich = new Stich(sessionInfo.getPlayerName(), sessionInfo.getPlayerId(), Arrays.asList(HEART_NINE, HEART_EIGHT, HEART_JACK, HEART_SEVEN), Arrays.asList(team0Points, team1Points));
 
         gameState.startNextRound(stich);
 

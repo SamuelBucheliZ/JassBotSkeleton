@@ -21,7 +21,7 @@ public class GameState {
     private Optional<Integer> currentPlayer = Optional.empty();
     private int round = 0;
 
-    public GameState(SessionInfo sessionInfo, Set<Card> myCards) {
+    public GameState(SessionInfo sessionInfo, Collection<Card> myCards) {
         this.sessionInfo = sessionInfo;
         this.myCards = new HashSet<>(myCards);
     }

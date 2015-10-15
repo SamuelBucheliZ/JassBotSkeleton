@@ -111,7 +111,7 @@ public class MessageReaderTest {
         Team team1 = teams.get(0);
         Team team2 = teams.get(1);
 
-        assertThat(team1.getName(), is("Team 1"));
+        assertThat(team1.getTeamName(), is("Team 1"));
 
         List<Player> players1 = team1.getPlayers();
 
@@ -129,7 +129,7 @@ public class MessageReaderTest {
         assertThat(player3.getId(), is(2));
         assertThat(player3.getName(), is("Player 3"));
 
-        assertThat(team2.getName(), is("Team 2"));
+        assertThat(team2.getTeamName(), is("Team 2"));
 
         List<Player> players2 = team2.getPlayers();
 
@@ -248,13 +248,13 @@ public class MessageReaderTest {
         assertThat(stich.getPlayedCards(), hasItem(SPADE_NINE));
         assertThat(stich.getPlayedCards(), hasItem(SPADE_QUEEN));
         assertThat(stich.getPlayedCards(), hasItem(SPADE_SIX));
-        assertThat(stich.getTeams().size(), is(2));
-        assertThat(stich.getTeams().get(0).getName(), is("Team 2"));
-        assertThat(stich.getTeams().get(0).getPoints(), is(42));
-        assertThat(stich.getTeams().get(0).getCurrentRoundPoints(), is(42));
-        assertThat(stich.getTeams().get(1).getName(), is("Team 1"));
-        assertThat(stich.getTeams().get(1).getPoints(), is(0));
-        assertThat(stich.getTeams().get(1).getCurrentRoundPoints(), is(0));
+        assertThat(stich.getPointsInformation().size(), is(2));
+        assertThat(stich.getPointsInformation().get(0).getTeamName(), is("Team 2"));
+        assertThat(stich.getPointsInformation().get(0).getPoints(), is(42));
+        assertThat(stich.getPointsInformation().get(0).getCurrentRoundPoints(), is(42));
+        assertThat(stich.getPointsInformation().get(1).getTeamName(), is("Team 1"));
+        assertThat(stich.getPointsInformation().get(1).getPoints(), is(0));
+        assertThat(stich.getPointsInformation().get(1).getCurrentRoundPoints(), is(0));
     }
 
 }

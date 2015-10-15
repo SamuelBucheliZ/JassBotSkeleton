@@ -29,7 +29,7 @@ public class TrumpfSuit extends Trumpf {
         trumpfCardValues.put(CardNumber.EIGHT, 0);
         trumpfCardValues.put(CardNumber.NINE, 14);
         trumpfCardValues.put(CardNumber.TEN, 10);
-        trumpfCardValues.put(CardNumber.JACK, 2);
+        trumpfCardValues.put(CardNumber.JACK, 20);
         trumpfCardValues.put(CardNumber.QUEEN, 3);
         trumpfCardValues.put(CardNumber.KING, 4);
         trumpfCardValues.put(CardNumber.ACE, 11);

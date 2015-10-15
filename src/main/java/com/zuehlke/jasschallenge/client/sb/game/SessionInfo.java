@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.sb.game;
 
 
+import com.google.common.base.Preconditions;
 import com.zuehlke.jasschallenge.client.sb.model.Team;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionChoice;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionType;
@@ -30,6 +31,7 @@ public class SessionInfo {
     }
 
     public void setPlayerOrderingAndPartnerId(List<Team> teams) {
+        Preconditions.checkState(playerId.isPresent());
         this.playerOrdering = Optional.of(PlayerOrdering.fromTeamList(teams));
         Predicate<Team> containsPlayerId = team -> team.getPlayers().stream()
                 .filter(player -> player.getId() == playerId.get())
@@ -41,8 +43,18 @@ public class SessionInfo {
                 .findAny().get().getId());
     }
 
+    public void resetPlayerOrderingAndPartnerId() {
+        this.playerOrdering = Optional.empty();
+        this.partnerId = Optional.empty();
+    }
+
     public void setPlayerId(int playerId) {
+        Preconditions.checkState(!this.playerId.isPresent());
         this.playerId = Optional.of(playerId);
+    }
+
+    public void resetPlayerId() {
+        this.partnerId = Optional.empty();
     }
 
     public boolean playerIdIsPresent() {
