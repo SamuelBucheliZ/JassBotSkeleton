@@ -51,11 +51,11 @@ public class Game {
     public void startSession(List<Team> teams) {
         this.sessionInfo.setPlayerOrderingAndPartnerId(teams);
         strategy.onSessionStarted(sessionInfo);
-        logger.debug("{}: Started session with teams {}.", sessionInfo.getLocalPlayerName(), teams);
+        logger.info("{}: Started session with teams {}.", sessionInfo.getLocalPlayerName(), teams);
     }
 
     public void finishSession(PointsInformation winningTeamPointsInformation) {
-        logger.info("{}: Session finished, team {} won with {} points.", sessionInfo.getLocalPlayerName(), winningTeamPointsInformation.getTeamName(), winningTeamPointsInformation.getPoints());
+        logger.info("{}: Session finished, team {} won with {} points using strategy {}.", sessionInfo.getLocalPlayerName(), winningTeamPointsInformation.getTeamName(), winningTeamPointsInformation.getPoints(), strategy.getClass().getSimpleName());
         strategy.onSessionFinished(sessionInfo);
         sessionInfo.resetPlayerOrderingAndPartnerId();
     }

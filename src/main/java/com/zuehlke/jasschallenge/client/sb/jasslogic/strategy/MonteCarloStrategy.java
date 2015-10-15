@@ -47,6 +47,7 @@ public class MonteCarloStrategy implements Strategy {
     @Override
     public Trumpf onRequestTrumpf(Set<Card> myCards, boolean isGeschoben) {
         long startTime = System.nanoTime();
+
         Set<Trumpf> trumpfs = new HashSet<>();
         for (Suit suit: Suit.values()) {
             trumpfs.add(new TrumpfSuit(suit));
@@ -57,6 +58,7 @@ public class MonteCarloStrategy implements Strategy {
         /*if (!isGeschoben) {
             trumpfs.add(new TrumpfSchiebe());
         }*/
+
         Map<Trumpf, CardEvaluation> evaluation = new HashMap<>();
         for (Trumpf trumpf: trumpfs) {
             evaluation.put(trumpf, new CardEvaluation());
