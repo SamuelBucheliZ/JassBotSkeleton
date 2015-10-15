@@ -16,7 +16,7 @@ public class RandomStrategy implements Strategy {
     private Random rand = new Random();
 
     @Override
-    public Trumpf onRequestTrumpf(Set<Card> myCards, boolean isGeschoben) {
+    public Trumpf onRequestTrumpf(GameState state, boolean isGeschoben) {
         TrumpfMode mode;
         do {
             mode = chooseRandomly(TrumpfMode.values());

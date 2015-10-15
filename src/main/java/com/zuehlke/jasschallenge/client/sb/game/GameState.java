@@ -7,11 +7,15 @@ import com.zuehlke.jasschallenge.client.sb.model.Move;
 import com.zuehlke.jasschallenge.client.sb.model.Stich;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class GameState {
+    private static final Logger logger = LogManager.getLogger(GameState.class);
+
     private final SessionInfo sessionInfo;
 
     private Set<Card> myCards = new HashSet<>();
@@ -57,6 +61,7 @@ public class GameState {
         this.cardsOnTable.add(card);
         if (currentPlayer.isPresent()) {
             currentPlayer = Optional.of(sessionInfo.getNextPlayerIdFrom(currentPlayer.get()));
+            //logger.info("{}: Added card {} to table, current player is now {}.", sessionInfo.getLocalPlayerName(), card, currentPlayer.get());
         }
     }
 
@@ -64,6 +69,7 @@ public class GameState {
         Preconditions.checkState(cardsOnTable.size() == Stich.STICH_SIZE);
         cardsOnTable.clear();
         currentPlayer = Optional.of(lastStich.getPlayerId());
+        //logger.info("{}: Starting next round, current player is now {}.", sessionInfo.getLocalPlayerName(), currentPlayer.get());
         round++;
     }
 
@@ -89,6 +95,18 @@ public class GameState {
 
     public int getRound() {
         return round;
+    }
+
+    public int getPlayerId() {
+        return sessionInfo.getPlayerId();
+    }
+
+    public int getPartnerId() {
+        return sessionInfo.getPartnerId();
+    }
+
+    public PlayerOrdering getPlayerOrdering() {
+        return sessionInfo.getPlayerOrdering();
     }
 
     @Override

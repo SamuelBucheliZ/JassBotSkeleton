@@ -37,26 +37,23 @@ public class Game {
     }
 
     public void joinSession(Player player) {
-        /* WARNING: This is a bit of a hack as the player id is not properly communicated to the player.
-         * We assume that BroadcastSessionJoined messages are issued in order, and also reset playerId when sending
-         * our session choice (see getSessionChoiceData() ) in case of bots using the same name
-         * (which still might be an issue, though...).
-         */
-        if (!sessionInfo.playerIdIsPresent() && sessionInfo.getRemotePlayerName().equals(player.getName())) {
+        if (!sessionInfo.playerIdIsPresent()) {
             sessionInfo.setPlayerId(player.getId());
-            logger.info("{}: Joined session {} with playerId {}.", sessionInfo.getLocalPlayerName(), sessionInfo.getSessionName(), sessionInfo.getPlayerId());
+            logger.info("{}: Player {} joined session {} with id {}.", sessionInfo.getLocalPlayerName(), player, sessionInfo.getSessionName(), sessionInfo.getPlayerId());
         }
     }
 
     public void startSession(List<Team> teams) {
         this.sessionInfo.setPlayerOrderingAndPartnerId(teams);
+
         strategy.onSessionStarted(sessionInfo);
         logger.info("{}: Started session with teams {}.", sessionInfo.getLocalPlayerName(), teams);
     }
 
     public void finishSession(PointsInformation winningTeamPointsInformation) {
-        logger.info("{}: Session finished, team {} won with {} points using strategy {}.", sessionInfo.getLocalPlayerName(), winningTeamPointsInformation.getTeamName(), winningTeamPointsInformation.getPoints(), strategy.getClass().getSimpleName());
+        logger.info("{}: Session finished, team {} won with {} points. I used strategy {}.", sessionInfo.getLocalPlayerName(), winningTeamPointsInformation.getTeamName(), winningTeamPointsInformation.getPoints(), strategy.getClass().getSimpleName());
         strategy.onSessionFinished(sessionInfo);
+        sessionInfo.resetPlayerId();
         sessionInfo.resetPlayerOrderingAndPartnerId();
     }
 
@@ -74,8 +71,14 @@ public class Game {
     public Trumpf requestTrumpf(boolean isGeschoben) {
         if (!isGeschoben) {
             state.setCurrentPlayer(sessionInfo.getPlayerId());
+        } else {
+            state.setCurrentPlayer(sessionInfo.getPartnerId());
         }
-        Trumpf trumpf = strategy.onRequestTrumpf(state.getMyCards(), isGeschoben);
+
+        long startTime = System.nanoTime();
+        Trumpf trumpf = strategy.onRequestTrumpf(state, isGeschoben);
+        long endTime = System.nanoTime();
+        logger.info("{}: Choosing trumpf {} took {} milliseconds.", sessionInfo.getLocalPlayerName(), trumpf, (endTime-startTime)/1000000);
 
         // safeguard against illegal choice of trumpf mode SCHIEBE
         if (isGeschoben && TrumpfMode.SCHIEBE.equals(trumpf.getMode())) {
@@ -90,6 +93,7 @@ public class Game {
 
     public Card requestCard(List<Card> cardsOnTable) {
         Preconditions.checkArgument(state.getCardsOnTable().equals(cardsOnTable));
+
         state.setCurrentPlayer(sessionInfo.getPlayerId());
 
         // safeguard against strategies repeatedly selecting invalid cards, thereby effectively blocking the game
@@ -101,7 +105,11 @@ public class Game {
             return (new ArrayList<>(allowedCards)).get(index);
         }
 
+        long startTime = System.nanoTime();
         Card card = strategy.onRequestCard(state);
+        long endTime = System.nanoTime();
+        logger.info("{}: Choosing card {} took {} milliseconds.", sessionInfo.getLocalPlayerName(), card, (endTime-startTime)/1000000);
+
         state.doPlay(card);
         return card;
     }
@@ -135,13 +143,24 @@ public class Game {
         return sessionInfo.getLocalPlayerName();
     }
 
+    public int getPlayerId() {
+        return sessionInfo.getPlayerId();
+    }
+
+    public int getPartnerId() {
+        return  sessionInfo.getPartnerId();
+    }
+
+    public PlayerOrdering getPlayerOrdering() {
+        return sessionInfo.getPlayerOrdering();
+    }
+
     public SessionChoiceData getSessionChoiceData() {
-        // see joinSession() above...
-        sessionInfo.resetPlayerId();
         return new SessionChoiceData(sessionInfo.getSessionChoice(), sessionInfo.getSessionName(), sessionInfo.getSessionType());
     }
 
     public void log(String message) {
         logger.info("{}: {}", sessionInfo.getLocalPlayerName(), message);
     }
+
 }

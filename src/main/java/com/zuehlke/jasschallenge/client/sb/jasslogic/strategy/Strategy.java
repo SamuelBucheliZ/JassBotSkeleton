@@ -1,5 +1,6 @@
 package com.zuehlke.jasschallenge.client.sb.jasslogic.strategy;
 
+import com.zuehlke.jasschallenge.client.sb.game.Game;
 import com.zuehlke.jasschallenge.client.sb.game.GameState;
 import com.zuehlke.jasschallenge.client.sb.game.SessionInfo;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
@@ -9,7 +10,7 @@ import java.util.Set;
 
 public interface Strategy {
     /* on RequestTrumpf */
-    Trumpf onRequestTrumpf(Set<Card> myCards, boolean isGeschoben);
+    Trumpf onRequestTrumpf(GameState state, boolean isGeschoben);
 
     /* on RequestCard */
     Card onRequestCard(GameState state);

@@ -3,6 +3,7 @@ package com.zuehlke.jasschallenge.client.sb.jasslogic.strategy;
 import com.google.common.base.Preconditions;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.zuehlke.jasschallenge.client.sb.game.Game;
 import com.zuehlke.jasschallenge.client.sb.game.GameState;
 import com.zuehlke.jasschallenge.client.sb.game.PlayerOrdering;
 import com.zuehlke.jasschallenge.client.sb.game.SessionInfo;
@@ -23,9 +24,10 @@ public class MonteCarloStrategy implements Strategy {
     private static final Logger logger = LogManager.getLogger(MonteCarloStrategy.class);
 
     private Random rand = new Random();
-    private PlayerOrdering order;
+
+    /*private PlayerOrdering order;
     private int myId;
-    private int partnerId;
+    private int partnerId;*/
 
     public MonteCarloStrategy() {
         this(ConfigFactory.load());
@@ -38,15 +40,11 @@ public class MonteCarloStrategy implements Strategy {
     }
 
     @Override
-    public void onSessionStarted(SessionInfo sessionInfo) {
-        this.myId = sessionInfo.getPlayerId();
-        this.partnerId = sessionInfo.getPartnerId();
-        this.order = sessionInfo.getPlayerOrdering();
-    }
-
-    @Override
-    public Trumpf onRequestTrumpf(Set<Card> myCards, boolean isGeschoben) {
-        long startTime = System.nanoTime();
+    public Trumpf onRequestTrumpf(GameState state, boolean isGeschoben) {
+        int myId = state.getPlayerId();
+        int partnerId = state.getPartnerId();
+        PlayerOrdering order = state.getPlayerOrdering();
+        Set<Card> myCards = state.getMyCards();
 
         Set<Trumpf> trumpfs = new HashSet<>();
         for (Suit suit: Suit.values()) {
@@ -63,14 +61,14 @@ public class MonteCarloStrategy implements Strategy {
         for (Trumpf trumpf: trumpfs) {
             evaluation.put(trumpf, new CardEvaluation());
             for (int i = 0; i < NUMBER_OF_CARD_DISTRIBUTIONS; i++) {
-                CardDistribution cardDistribution = distributeCards(myCards, new ArrayList<>(), EnumSet.noneOf(Card.class), myId);
+                CardDistribution cardDistribution = distributeCards(myCards, new ArrayList<>(), EnumSet.noneOf(Card.class), myId, myId, order);
                 for (int j = 0; j < NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION; j++) {
                     CardDistribution cards = new CardDistribution(cardDistribution);
                     int firstPlayer = myId;
-                    if (isGeschoben) {
+                    /*if (isGeschoben) {
                         firstPlayer = partnerId;
-                    }
-                    evaluation.get(trumpf).add(evaluateCardChoice(cards, trumpf, new ArrayList<>(), firstPlayer));
+                    }*/
+                    evaluation.get(trumpf).add(evaluateCardChoice(cards, trumpf, new ArrayList<>(), firstPlayer, myId, partnerId, order));
                 }
             }
         }
@@ -79,12 +77,11 @@ public class MonteCarloStrategy implements Strategy {
         Trumpf chosenTrumpf = evaluation.keySet().stream()
                 .filter(trumpf -> evaluation.get(trumpf).getOurPoints() == maxPoints)
                 .min((trumpf1, trumpf2) -> Integer.valueOf(evaluation.get(trumpf1).getTheirPoints()).compareTo(evaluation.get(trumpf2).getTheirPoints())).get();
-        long endTime = System.nanoTime();
-        logger.info("Choosing trumpf {} took {} milliseconds.", chosenTrumpf, (endTime-startTime)/1000000);
+
         return chosenTrumpf;
     }
 
-    private CardDistribution distributeCards(Set<Card> playerCards, List<Card> cardsOnTable, EnumSet<Card> playedCards, int firstPlayerId) {
+    private CardDistribution distributeCards(Set<Card> playerCards, List<Card> cardsOnTable, EnumSet<Card> playedCards, int firstPlayerId, int myId, PlayerOrdering order) {
         EnumSet<Card> myCards = EnumSet.copyOf(playerCards);
         EnumSet<Card> otherCards =  EnumSet.complementOf(EnumSet.copyOf(myCards));
         otherCards.removeAll(playedCards);
@@ -142,7 +139,7 @@ public class MonteCarloStrategy implements Strategy {
         }
     }
 
-    public CardEvaluation evaluateCardChoice(CardDistribution cards, Trumpf trumpf, List<Card> cardsOnTable, int firstPlayerId) {
+    public CardEvaluation evaluateCardChoice(CardDistribution cards, Trumpf trumpf, List<Card> cardsOnTable, int firstPlayerId, int myId, int partnerId, PlayerOrdering order) {
         int currentPlayer = firstPlayerId;
         CardEvaluation evaluation = new CardEvaluation();
 
@@ -177,9 +174,11 @@ public class MonteCarloStrategy implements Strategy {
 
     @Override
     public Card onRequestCard(GameState state) {
-        Preconditions.checkArgument(state.getCurrentPlayer() == myId);
+        int myId = state.getPlayerId();
+        int partnerId = state.getPartnerId();
+        PlayerOrdering order = state.getPlayerOrdering();
 
-        long startTime = System.nanoTime();
+        Preconditions.checkArgument(state.getCurrentPlayer() == myId);
 
         Map<Card, CardEvaluation> evaluation = new HashMap<>();
 
@@ -196,14 +195,14 @@ public class MonteCarloStrategy implements Strategy {
         for (Card card: allowedCards) {
             evaluation.put(card, new CardEvaluation());
             for (int i = 0; i < NUMBER_OF_CARD_DISTRIBUTIONS; i++) {
-                CardDistribution cardDistribution = distributeCards(state.getMyCards(), state.getCardsOnTable(), playedCardsEnumSet, state.getCurrentPlayer());
+                CardDistribution cardDistribution = distributeCards(state.getMyCards(), state.getCardsOnTable(), playedCardsEnumSet, state.getCurrentPlayer(), myId, order);
                 for (int j = 0; j < NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION; j++) {
                     CardDistribution cards = new CardDistribution(cardDistribution);
                     cards.get(myId).remove(card);
                     List<Card> cardsOnTable = new ArrayList<>(state.getCardsOnTable());
                     cardsOnTable.add(card);
                     int nextPlayer = order.getNextPlayerIdFrom(myId);
-                    evaluation.get(card).add(evaluateCardChoice(cards, state.getTrumpf(), cardsOnTable, nextPlayer));
+                    evaluation.get(card).add(evaluateCardChoice(cards, state.getTrumpf(), cardsOnTable, nextPlayer, myId, partnerId, order));
                 }
             }
         }
@@ -212,8 +211,6 @@ public class MonteCarloStrategy implements Strategy {
         Card chosenCard = evaluation.entrySet().stream().filter(entry -> entry.getValue().getOurPoints() == maxPoints).map(Map.Entry::getKey)
                 .min((trumpf1, trumpf2) -> Integer.valueOf(evaluation.get(trumpf1).getTheirPoints()).compareTo(evaluation.get(trumpf2).getTheirPoints())).get();
 
-        long endTime = System.nanoTime();
-        logger.info("Choosing card {} took {} milliseconds.", chosenCard, (endTime-startTime)/1000000);
         return chosenCard;
     }
 

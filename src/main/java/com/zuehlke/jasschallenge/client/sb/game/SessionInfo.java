@@ -2,6 +2,7 @@ package com.zuehlke.jasschallenge.client.sb.game;
 
 
 import com.google.common.base.Preconditions;
+import com.zuehlke.jasschallenge.client.sb.model.Player;
 import com.zuehlke.jasschallenge.client.sb.model.Team;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionChoice;
 import com.zuehlke.jasschallenge.client.sb.socket.responses.SessionType;
@@ -19,6 +20,7 @@ public class SessionInfo {
 
     private Optional<Integer> playerId;
     private Optional<Integer> partnerId;
+    private List<Team> teams;
     private Optional<PlayerOrdering> playerOrdering;
 
     public SessionInfo(String remotePlayerName, String localPlayerName, String sessionName, SessionChoice sessionChoice, SessionType sessionType) {
@@ -32,31 +34,35 @@ public class SessionInfo {
         this.playerOrdering = Optional.empty();
     }
 
-    public void setPlayerOrderingAndPartnerId(List<Team> teams) {
-        Preconditions.checkState(playerId.isPresent());
-        this.playerOrdering = Optional.of(PlayerOrdering.fromTeamList(teams));
-        Predicate<Team> containsPlayerId = team -> team.getPlayers().stream()
+    private Team getMyTeam() {
+        Predicate<Team> containsPlayerName = team -> team.getPlayers().stream()
                 .filter(player -> player.getId() == playerId.get())
                 .findAny().isPresent();
-        this.partnerId = Optional.of(teams.stream()
-                .filter(containsPlayerId)
-                .flatMap(team -> team.getPlayers().stream())
+        Team team = teams.stream()
+                .filter(containsPlayerName).findAny().get();
+        return team;
+    }
+
+    public void setPlayerOrderingAndPartnerId(List<Team> teams) {
+        this.teams = teams;
+        this.playerOrdering = Optional.of(PlayerOrdering.fromTeamList(teams));
+        int partnerId = getMyTeam().getPlayers().stream()
                 .filter(player -> player.getId() != playerId.get())
-                .findAny().get().getId());
+                .findAny().get().getId();
+        this.partnerId = Optional.of(partnerId);
     }
 
     public void resetPlayerOrderingAndPartnerId() {
-        this.playerOrdering = Optional.empty();
         this.partnerId = Optional.empty();
+        this.playerOrdering = Optional.empty();
     }
 
     public void setPlayerId(int playerId) {
-        Preconditions.checkState(!this.playerId.isPresent());
         this.playerId = Optional.of(playerId);
     }
 
     public void resetPlayerId() {
-        this.partnerId = Optional.empty();
+        this.playerId = Optional.empty();
     }
 
     public boolean playerIdIsPresent() {
@@ -98,4 +104,11 @@ public class SessionInfo {
     public SessionType getSessionType() {
         return sessionType;
     }
+
+    public Player getFirstPlayer() {
+        return getMyTeam().getPlayers().get(0);
+    }
+
+    public Player getSecondPlayer() {
+        return getMyTeam().getPlayers().get(1);    }
 }
