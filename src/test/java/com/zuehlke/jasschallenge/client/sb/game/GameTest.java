@@ -30,7 +30,7 @@ public class GameTest {
         Strategy badStrategy = mock(Strategy.class);
         when(badStrategy.onRequestTrumpf(anySetOf(Card.class), eq(true))).thenReturn(new TrumpfSchiebe());
 
-        Game game = new Game("player2", "session2", SessionChoice.AUTOJOIN, SessionType.SINGLE_GAME, badStrategy);
+        Game game = new Game("player2", "player2", "session2", SessionChoice.AUTOJOIN, SessionType.SINGLE_GAME, badStrategy);
         game.joinSession(new Player(2, "player2"));
         game.startSession(gameDataFactory.createTeamListWithPlayerOrder2031());
         game.cardsDealt(Collections.emptySet());
@@ -46,7 +46,7 @@ public class GameTest {
         Strategy badStrategy = mock(Strategy.class);
         when(badStrategy.onRequestCard(any(GameState.class))).thenReturn(Card.CLUB_ACE);
 
-        Game game = new Game("player0", "session1", SessionChoice.AUTOJOIN, SessionType.SINGLE_GAME, badStrategy);
+        Game game = new Game("player0", "player0", "session1", SessionChoice.AUTOJOIN, SessionType.SINGLE_GAME, badStrategy);
         game.joinSession(new Player(0, "player0"));
         game.startSession(gameDataFactory.createTeamListWithPlayerOrder2031());
         game.cardsDealt(Arrays.asList(Card.CLUB_ACE, Card.DIAMOND_JACK));

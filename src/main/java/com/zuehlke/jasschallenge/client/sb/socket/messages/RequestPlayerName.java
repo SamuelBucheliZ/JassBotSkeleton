@@ -9,7 +9,7 @@ import java.util.Optional;
 public class RequestPlayerName implements Message {
     @Override
     public Optional<Response> dispatch(Game game) {
-        Response response = new ChoosePlayerName(game.getPlayerName());
+        Response response = new ChoosePlayerName(game.getRemotePlayerName());
         return Optional.of(response);
     }
 }

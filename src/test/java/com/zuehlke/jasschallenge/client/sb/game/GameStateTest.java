@@ -50,7 +50,7 @@ public class GameStateTest {
         PointsInformation team0Points = new PointsInformation("team0", 34, 999);
         PointsInformation team1Points = new PointsInformation("team0", 0, 1001);
 
-        Stich stich = new Stich(sessionInfo.getPlayerName(), sessionInfo.getPlayerId(), Arrays.asList(HEART_NINE, HEART_EIGHT, HEART_JACK, HEART_SEVEN), Arrays.asList(team0Points, team1Points));
+        Stich stich = new Stich(sessionInfo.getRemotePlayerName(), sessionInfo.getPlayerId(), Arrays.asList(HEART_NINE, HEART_EIGHT, HEART_JACK, HEART_SEVEN), Arrays.asList(team0Points, team1Points));
 
         gameState.startNextRound(stich);
 

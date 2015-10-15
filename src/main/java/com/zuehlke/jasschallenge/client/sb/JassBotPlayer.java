@@ -48,13 +48,14 @@ public class JassBotPlayer {
         this.SESSION_TYPE = SessionType.valueOf(config.getString("SESSION_TYPE"));
 
         // in tournament mode, both players should have the exactly same name
-        String playerName = BOT_NAME_PREFIX;
+        String remotePlayerName = BOT_NAME_PREFIX;
+        String localPlayerName = remotePlayerName + playerID;
         if (APPEND_UUID_TO_BOT_NAME) {
-            playerName += playerID + ":" + UUID.randomUUID().hashCode();
+            remotePlayerName += ":" + UUID.randomUUID().hashCode();
         }
-        logger.info("Creating bot player {} for session {}.", playerName, SESSION_NAME);
+        logger.info("Creating bot player {} for session {}.", remotePlayerName, SESSION_NAME);
 
-        Game game = new Game(playerName, SESSION_NAME, SESSION_CHOICE, SESSION_TYPE, strategy);
+        Game game = new Game(remotePlayerName, localPlayerName, SESSION_NAME, SESSION_CHOICE, SESSION_TYPE, strategy);
 
         ClientManager client = ClientManager.createClient();
         try {

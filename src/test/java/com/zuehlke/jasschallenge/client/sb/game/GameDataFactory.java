@@ -25,7 +25,7 @@ public class GameDataFactory {
     }
 
     public SessionInfo createSessionInfoForPlayerWithId3() {
-        SessionInfo sessionInfo = new SessionInfo("player3", "someSession", SessionChoice.AUTOJOIN, SessionType.TOURNAMENT);
+        SessionInfo sessionInfo = new SessionInfo("player3", "player3", "someSession", SessionChoice.AUTOJOIN, SessionType.TOURNAMENT);
         sessionInfo.setPlayerId(3);
         return sessionInfo;
     }

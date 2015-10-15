@@ -46,6 +46,7 @@ public class MonteCarloStrategy implements Strategy {
 
     @Override
     public Trumpf onRequestTrumpf(Set<Card> myCards, boolean isGeschoben) {
+        long startTime = System.nanoTime();
         Set<Trumpf> trumpfs = new HashSet<>();
         for (Suit suit: Suit.values()) {
             trumpfs.add(new TrumpfSuit(suit));
@@ -76,6 +77,8 @@ public class MonteCarloStrategy implements Strategy {
         Trumpf chosenTrumpf = evaluation.keySet().stream()
                 .filter(trumpf -> evaluation.get(trumpf).getOurPoints() == maxPoints)
                 .min((trumpf1, trumpf2) -> Integer.valueOf(evaluation.get(trumpf1).getTheirPoints()).compareTo(evaluation.get(trumpf2).getTheirPoints())).get();
+        long endTime = System.nanoTime();
+        logger.info("Choosing trumpf {} took {} milliseconds.", chosenTrumpf, (endTime-startTime)/1000000);
         return chosenTrumpf;
     }
 
@@ -172,8 +175,9 @@ public class MonteCarloStrategy implements Strategy {
 
     @Override
     public Card onRequestCard(GameState state) {
-
         Preconditions.checkArgument(state.getCurrentPlayer() == myId);
+
+        long startTime = System.nanoTime();
 
         Map<Card, CardEvaluation> evaluation = new HashMap<>();
 
@@ -206,6 +210,8 @@ public class MonteCarloStrategy implements Strategy {
         Card chosenCard = evaluation.entrySet().stream().filter(entry -> entry.getValue().getOurPoints() == maxPoints).map(Map.Entry::getKey)
                 .min((trumpf1, trumpf2) -> Integer.valueOf(evaluation.get(trumpf1).getTheirPoints()).compareTo(evaluation.get(trumpf2).getTheirPoints())).get();
 
+        long endTime = System.nanoTime();
+        logger.info("Choosing card {} took {} milliseconds.", chosenCard, (endTime-startTime)/1000000);
         return chosenCard;
     }
 

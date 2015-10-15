@@ -36,7 +36,7 @@ public class JassBotClientEndpoint {
 
     @OnOpen
     public void onOpen(Session session) {
-        logger.info("{}: Opened connection to server. Session: {}.", game.getPlayerName(), session.getId());
+        logger.info("{}: Opened connection to server. Session: {}.", game.getLocalPlayerName(), session.getId());
     }
 
     /**
@@ -55,14 +55,14 @@ public class JassBotClientEndpoint {
 
     @OnClose
     public void onClose(Session session, CloseReason closeReason) {
-        logger.info("{}: Session {} closed because of {}.", game.getPlayerName(), session.getId(), closeReason);
+        logger.info("{}: Session {} closed because of {}.", game.getLocalPlayerName(), session.getId(), closeReason);
         countDown.countDown();
     }
 
     @OnError
     public void onError(Throwable t) {
         ExceptionUtils.printRootCauseStackTrace(t);
-        logger.error(String.format("%s: Error.", game.getPlayerName()), t);
+        logger.error(String.format("%s: Error.", game.getLocalPlayerName()), t);
     }
 
     private void sendResponse(Response response, Session session) {
@@ -70,7 +70,7 @@ public class JassBotClientEndpoint {
         try {
             session.getBasicRemote().sendText(responseAsJson);
         } catch (IOException e) {
-            logger.error(String.format("%s: Could not send response %s to message.", game.getPlayerName(), responseAsJson), e);
+            logger.error(String.format("%s: Could not send response %s to message.", game.getLocalPlayerName(), responseAsJson), e);
         }
     }
 

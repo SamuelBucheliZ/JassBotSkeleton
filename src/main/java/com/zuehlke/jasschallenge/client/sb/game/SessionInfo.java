@@ -11,7 +11,8 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public class SessionInfo {
-    private final String playerName;
+    private final String remotePlayerName;
+    private final String localPlayerName;
     private final String sessionName;
     private final SessionChoice sessionChoice;
     private final SessionType sessionType;
@@ -20,8 +21,9 @@ public class SessionInfo {
     private Optional<Integer> partnerId;
     private Optional<PlayerOrdering> playerOrdering;
 
-    public SessionInfo(String playerName, String sessionName, SessionChoice sessionChoice, SessionType sessionType) {
-        this.playerName = playerName;
+    public SessionInfo(String remotePlayerName, String localPlayerName, String sessionName, SessionChoice sessionChoice, SessionType sessionType) {
+        this.remotePlayerName = remotePlayerName;
+        this.localPlayerName = localPlayerName;
         this.sessionName = sessionName;
         this.sessionChoice = sessionChoice;
         this.sessionType = sessionType;
@@ -77,8 +79,12 @@ public class SessionInfo {
         return getPlayerOrdering().getNextPlayerIdFrom(playerId);
     }
 
-    public String getPlayerName() {
-        return playerName;
+    public String getRemotePlayerName() {
+        return remotePlayerName;
+    }
+
+    public String getLocalPlayerName() {
+        return localPlayerName;
     }
 
     public String getSessionName() {
