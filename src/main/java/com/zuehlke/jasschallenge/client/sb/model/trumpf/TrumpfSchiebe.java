@@ -3,6 +3,7 @@ package com.zuehlke.jasschallenge.client.sb.model.trumpf;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 
 import java.util.Comparator;
+import java.util.List;
 
 public class TrumpfSchiebe extends Trumpf {
     public TrumpfSchiebe() {
@@ -10,13 +11,13 @@ public class TrumpfSchiebe extends Trumpf {
     }
 
     @Override
-    public boolean isObenabeOrUndeufe() {
-        return false;
+    public int getValueOf(Card card) {
+        return 0;
     }
 
     @Override
-    public int getValueOf(Card card) {
-        return 0;
+    public Card getWinningCard(List<Card> cardsOnTable) {
+        return null;
     }
 
     @Override
@@ -26,6 +27,6 @@ public class TrumpfSchiebe extends Trumpf {
 
     @Override
     public String toString() {
-        return null;
+        return String.valueOf(TrumpfMode.SCHIEBE);
     }
 }

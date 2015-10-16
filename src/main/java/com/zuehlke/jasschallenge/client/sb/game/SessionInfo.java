@@ -34,7 +34,7 @@ public class SessionInfo {
         this.playerOrdering = Optional.empty();
     }
 
-    private Team getMyTeam() {
+    public Team getMyTeam() {
         Predicate<Team> containsPlayerName = team -> team.getPlayers().stream()
                 .filter(player -> player.getId() == playerId.get())
                 .findAny().isPresent();

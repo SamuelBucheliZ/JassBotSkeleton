@@ -5,35 +5,43 @@ import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import java.util.*;
 
 public class CardDistribution {
-    private Map<Integer, EnumSet<Card>> cards;
+    private Map<Integer, LinkedList<Card>> cards;
 
     public CardDistribution(List<Integer> playerIds) {
         cards = new HashMap<>();
         for (Integer id: playerIds) {
-            cards.put(id, EnumSet.noneOf(Card.class));
+            cards.put(id, new LinkedList<>());
         }
     }
 
     public CardDistribution(CardDistribution cardDistribution) {
         cards = new HashMap<>();
         for (Integer id: cardDistribution.cards.keySet()) {
-            cards.put(id, EnumSet.copyOf(cardDistribution.cards.get(id)));
+            cards.put(id, new LinkedList<>(cardDistribution.cards.get(id)));
         }
     }
 
     public boolean isEmpty() {
-        boolean empty = true;
-        for (Integer id : cards.keySet()) {
-            empty = empty && cards.get(id).isEmpty();
-        }
-        return empty;
+        return cards.values().stream().allMatch(List<Card>::isEmpty);
     }
 
     public void add(int id, Card card) {
         this.cards.get(id).add(card);
     }
 
-    public EnumSet<Card> get(int nextPlayer) {
-        return cards.get(nextPlayer);
+    public Card removeFirst(int id) {
+        return this.cards.get(id).removeFirst();
+    }
+
+    public void remove(int id, Card card) {
+        this.cards.get(id).remove(card);
+    }
+
+    public void shuffle(int id) {
+        Collections.shuffle(cards.get(id));
+    }
+
+    public Set<Card> get(int id) {
+        return new HashSet<>(cards.get(id));
     }
 }

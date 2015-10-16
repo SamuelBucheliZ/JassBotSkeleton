@@ -61,7 +61,7 @@ public class GameState {
         this.cardsOnTable.add(card);
         if (currentPlayer.isPresent()) {
             currentPlayer = Optional.of(sessionInfo.getNextPlayerIdFrom(currentPlayer.get()));
-            //logger.info("{}: Added card {} to table, current player is now {}.", sessionInfo.getLocalPlayerName(), card, currentPlayer.get());
+            logger.trace("{}: Added card {} to table, current player is now {}.", sessionInfo.getLocalPlayerName(), card, currentPlayer.get());
         }
     }
 
@@ -69,7 +69,7 @@ public class GameState {
         Preconditions.checkState(cardsOnTable.size() == Stich.STICH_SIZE);
         cardsOnTable.clear();
         currentPlayer = Optional.of(lastStich.getPlayerId());
-        //logger.info("{}: Starting next round, current player is now {}.", sessionInfo.getLocalPlayerName(), currentPlayer.get());
+        logger.trace("{}: Starting next round, current player is now {}.", sessionInfo.getLocalPlayerName(), currentPlayer.get());
         round++;
     }
 

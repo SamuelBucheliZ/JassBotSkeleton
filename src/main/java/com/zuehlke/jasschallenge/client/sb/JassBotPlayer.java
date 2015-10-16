@@ -65,5 +65,4 @@ public class JassBotPlayer {
             throw new RuntimeException(e);
         }
     }
-
 }

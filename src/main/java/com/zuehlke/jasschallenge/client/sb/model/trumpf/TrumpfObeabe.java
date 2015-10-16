@@ -5,7 +5,9 @@ import com.zuehlke.jasschallenge.client.sb.model.cards.CardNumber;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public class TrumpfObeabe extends Trumpf {
     private static Map<CardNumber, Integer> cardValues = new HashMap<>();
@@ -26,13 +28,16 @@ public class TrumpfObeabe extends Trumpf {
     }
 
     @Override
-    public boolean isObenabeOrUndeufe() {
-        return true;
+    public int getValueOf(Card card) {
+        return cardValues.get(card.getCardNumber());
     }
 
     @Override
-    public int getValueOf(Card card) {
-        return cardValues.get(card.getCardNumber());
+    public Card getWinningCard(List<Card> cardsOnTable) {
+        Predicate<Card> hasSameSuitAsFirstCard = card -> cardsOnTable.get(0).getSuit().equals(card.getSuit());
+        return cardsOnTable.stream()
+                .filter(hasSameSuitAsFirstCard)
+                .max(getComparator()).get();
     }
 
     @Override

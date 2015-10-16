@@ -70,6 +70,6 @@ public abstract class AllowedCards {
     }
 
     Set<Card> getPlayerCards() {
-        return playerCards;
+        return Collections.unmodifiableSet(playerCards);
     }
 }

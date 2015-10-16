@@ -37,9 +37,16 @@ public class Game {
     }
 
     public void joinSession(Player player) {
+        /*
+         * The first SessionJoined message a player receives is guaranteed to contain the player's own id.
+         * Note that player ids get reassigned in every new session in tournament mode, thus, the player
+         * id needs to be reset at finish session.
+         */
         if (!sessionInfo.playerIdIsPresent()) {
             sessionInfo.setPlayerId(player.getId());
-            logger.info("{}: Player {} joined session {} with id {}.", sessionInfo.getLocalPlayerName(), player, sessionInfo.getSessionName(), sessionInfo.getPlayerId());
+            logger.info("{}: I, player {}, joined session {} with id {}.", sessionInfo.getLocalPlayerName(), player, sessionInfo.getSessionName(), player.getId());
+        } else {
+            logger.info("{}: Player {} joined session {} with id {}.", sessionInfo.getLocalPlayerName(), player, sessionInfo.getSessionName(), player.getId());
         }
     }
 
@@ -47,12 +54,17 @@ public class Game {
         this.sessionInfo.setPlayerOrderingAndPartnerId(teams);
 
         strategy.onSessionStarted(sessionInfo);
-        logger.info("{}: Started session with teams {}.", sessionInfo.getLocalPlayerName(), teams);
+
+        logger.debug("{}: Received team information, my id is {}, my partner's id is {}.", sessionInfo.getLocalPlayerName(), sessionInfo.getPlayerId(), sessionInfo.getPartnerId());
+        logger.debug("{}: Started session with teams {}.", sessionInfo.getLocalPlayerName(), teams);
     }
 
     public void finishSession(PointsInformation winningTeamPointsInformation) {
-        logger.info("{}: Session finished, team {} won with {} points. I used strategy {}.", sessionInfo.getLocalPlayerName(), winningTeamPointsInformation.getTeamName(), winningTeamPointsInformation.getPoints(), strategy.getClass().getSimpleName());
+        boolean iWon = winningTeamPointsInformation.getTeamName().equals(sessionInfo.getMyTeam().getTeamName());
+        String myOrTheOther = iWon ? "my" : "the other";
+        logger.info("{}: Session finished, {} team {} won with {} points. I used strategy {}.", sessionInfo.getLocalPlayerName(), myOrTheOther, winningTeamPointsInformation.getTeamName(), winningTeamPointsInformation.getPoints(), strategy.getClass().getSimpleName());
         strategy.onSessionFinished(sessionInfo);
+        // remember that new IDs are issued at the beginning of every new session in tournament mode, see also joinSession() and startSession().
         sessionInfo.resetPlayerId();
         sessionInfo.resetPlayerOrderingAndPartnerId();
     }
@@ -60,11 +72,11 @@ public class Game {
     public void startGame(Trumpf trumpf) {
         state.setTrumpf(trumpf);
         strategy.onGameStarted(state);
-        logger.info("{}: Started game with trumpf {}.", sessionInfo.getLocalPlayerName(), trumpf);
+        logger.trace("{}: Started game with trumpf {}.", sessionInfo.getLocalPlayerName(), trumpf);
     }
 
     public void finishGame(List<PointsInformation> pointsInformation) {
-        logger.info("{}: Game finished, with {} and {}. ", sessionInfo.getLocalPlayerName(), pointsInformation.get(0), pointsInformation.get(1));
+        logger.info("{}: Game finished, with {} vs. {}. ", sessionInfo.getLocalPlayerName(), pointsInformation.get(0), pointsInformation.get(1));
         strategy.onGameFinished(state);
     }
 
@@ -74,11 +86,12 @@ public class Game {
         } else {
             state.setCurrentPlayer(sessionInfo.getPartnerId());
         }
+        logger.debug("{}: Received trumpf request, setting current player to {}.", sessionInfo.getLocalPlayerName(), state.getCurrentPlayer());
 
         long startTime = System.nanoTime();
         Trumpf trumpf = strategy.onRequestTrumpf(state, isGeschoben);
         long endTime = System.nanoTime();
-        logger.info("{}: Choosing trumpf {} took {} milliseconds.", sessionInfo.getLocalPlayerName(), trumpf, (endTime-startTime)/1000000);
+        logger.debug("{}: Choosing trumpf {} took {} milliseconds.", sessionInfo.getLocalPlayerName(), trumpf, (endTime-startTime)/1000000);
 
         // safeguard against illegal choice of trumpf mode SCHIEBE
         if (isGeschoben && TrumpfMode.SCHIEBE.equals(trumpf.getMode())) {
@@ -88,6 +101,8 @@ public class Game {
             trumpf = validTrumpfs.get(index);
         }
 
+        logger.info("{}: Choosing trumpf {} with cards {}.", sessionInfo.getLocalPlayerName(), trumpf, state.getMyCards());
+
         return trumpf;
     }
 
@@ -95,6 +110,7 @@ public class Game {
         Preconditions.checkArgument(state.getCardsOnTable().equals(cardsOnTable));
 
         state.setCurrentPlayer(sessionInfo.getPlayerId());
+        logger.debug("{}: Received card request, setting current player to {}.", sessionInfo.getLocalPlayerName(), state.getCurrentPlayer());
 
         // safeguard against strategies repeatedly selecting invalid cards, thereby effectively blocking the game
         if (previousCardChoiceRejected) {
@@ -108,7 +124,7 @@ public class Game {
         long startTime = System.nanoTime();
         Card card = strategy.onRequestCard(state);
         long endTime = System.nanoTime();
-        logger.info("{}: Choosing card {} took {} milliseconds.", sessionInfo.getLocalPlayerName(), card, (endTime-startTime)/1000000);
+        logger.debug("{}: Choosing card {} took {} milliseconds.", sessionInfo.getLocalPlayerName(), card, (endTime-startTime)/1000000);
 
         state.doPlay(card);
         return card;
@@ -131,7 +147,7 @@ public class Game {
     }
 
     public void stichMade(Stich stich) {
-        logger.info("{}: {}", sessionInfo.getLocalPlayerName(), stich.toString());
+        logger.debug("{}: {}", sessionInfo.getLocalPlayerName(), stich.toString());
         state.startNextRound(stich);
     }
 
@@ -151,16 +167,12 @@ public class Game {
         return  sessionInfo.getPartnerId();
     }
 
-    public PlayerOrdering getPlayerOrdering() {
-        return sessionInfo.getPlayerOrdering();
-    }
-
     public SessionChoiceData getSessionChoiceData() {
         return new SessionChoiceData(sessionInfo.getSessionChoice(), sessionInfo.getSessionName(), sessionInfo.getSessionType());
     }
 
     public void log(String message) {
-        logger.info("{}: {}", sessionInfo.getLocalPlayerName(), message);
+        logger.trace("{}: {}", sessionInfo.getLocalPlayerName(), message);
     }
 
 }

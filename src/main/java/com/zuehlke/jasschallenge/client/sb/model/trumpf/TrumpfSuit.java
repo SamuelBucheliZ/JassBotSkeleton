@@ -6,7 +6,9 @@ import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public class TrumpfSuit extends Trumpf {
     private static Map<CardNumber, Integer> regularCardValues = new HashMap<>();
@@ -40,17 +42,20 @@ public class TrumpfSuit extends Trumpf {
     }
 
     @Override
-    public boolean isObenabeOrUndeufe() {
-        return false;
-    }
-
-    @Override
     public int getValueOf(Card card) {
         if (getSuit().equals(card.getSuit())) {
             return trumpfCardValues.get(card.getCardNumber());
         } else {
             return regularCardValues.get(card.getCardNumber());
         }
+    }
+
+    @Override
+    public Card getWinningCard(List<Card> cardsOnTable) {
+        Predicate<Card> hasSameSuitAsFirstCardOrIsTrumpf = card -> cardsOnTable.get(0).getSuit().equals(card.getSuit()) || this.getSuit().equals(card.getSuit());
+        return cardsOnTable.stream()
+                .filter(hasSameSuitAsFirstCardOrIsTrumpf)
+                .max(getComparator()).get();
     }
 
     private Integer getTrumpfOrder(Card card) {

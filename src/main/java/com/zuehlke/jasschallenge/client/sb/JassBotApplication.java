@@ -44,7 +44,6 @@ public class JassBotApplication {
             countDown.await();
         } catch (InterruptedException e) {
             logger.error("JassBotApplication was interrupted.", e);
-            e.printStackTrace();
         }
     }
 

@@ -7,6 +7,7 @@ import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 public abstract class Trumpf {
@@ -61,16 +62,24 @@ public abstract class Trumpf {
         this.suit = null;
     }
 
-    public abstract boolean isObenabeOrUndeufe();
-
     public abstract int getValueOf(Card card);
+
+    public abstract Card getWinningCard(List<Card> cardsOnTable);
+
+    public abstract Comparator<Card> getComparator();
 
     public boolean beatsCard(Card leftCard, Card rightCard) {
         Comparator<Card> comparator = getComparator();
         return comparator.compare(leftCard, rightCard) > 0;
     }
 
-    public abstract Comparator<Card> getComparator();
+    public int getValueOf(Collection<Card> cards) {
+        int points = 0;
+        for (Card card: cards) {
+            points += getValueOf(card);
+        }
+        return points;
+    }
 
     public TrumpfMode getMode() {
         return mode;
@@ -82,12 +91,4 @@ public abstract class Trumpf {
 
     @Override
     public abstract String toString();
-
-    public int getValueOf(Collection<Card> cards) {
-        int points = 0;
-        for (Card card: cards) {
-            points += getValueOf(card);
-        }
-        return points;
-    }
 }

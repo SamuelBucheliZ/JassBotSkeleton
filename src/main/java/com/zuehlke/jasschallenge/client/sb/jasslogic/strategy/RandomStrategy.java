@@ -20,7 +20,9 @@ public class RandomStrategy implements Strategy {
         TrumpfMode mode;
         do {
             mode = chooseRandomly(TrumpfMode.values());
-        } while(isGeschoben && TrumpfMode.SCHIEBE.equals(mode));
+        } while(TrumpfMode.SCHIEBE.equals(mode));
+        // TODO: ignore SCHIEBE for now
+        //} while(isGeschoben && TrumpfMode.SCHIEBE.equals(mode));
         Suit suit = null;
         if (TrumpfMode.TRUMPF.equals(mode)) {
             suit = chooseRandomly(Suit.values());

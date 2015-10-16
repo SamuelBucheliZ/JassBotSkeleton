@@ -4,6 +4,7 @@ public enum SessionChoice {
 
     AUTOJOIN,
     CREATE_NEW,
-    JOIN_EXISTING
+    JOIN_EXISTING,
+    SPECTATOR
 
 }

@@ -3,7 +3,6 @@ package com.zuehlke.jasschallenge.client.sb.jasslogic.strategy;
 import com.google.common.base.Preconditions;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import com.zuehlke.jasschallenge.client.sb.game.Game;
 import com.zuehlke.jasschallenge.client.sb.game.GameState;
 import com.zuehlke.jasschallenge.client.sb.game.PlayerOrdering;
 import com.zuehlke.jasschallenge.client.sb.game.SessionInfo;
@@ -16,18 +15,22 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class MonteCarloStrategy implements Strategy {
-    private final int NUMBER_OF_CARD_DISTRIBUTIONS;
-    private final int NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION;
+    private final int NUMBER_OF_CARD_DISTRIBUTIONS_FOR_TRUMPF_REQUEST;
+    private final int NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_TRUMPF_REQUEST;
+    private final int MAX_SIMULATION_DEPTH_FOR_TRUMPF_REQUEST;
+
+    private final int NUMBER_OF_CARD_DISTRIBUTIONS_FOR_CARD_REQUEST;
+    private final int NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_CARD_REQUEST;
+    private final int MAX_SIMULATION_DEPTH_FOR_CARD_REQUEST;
 
     private static final Logger logger = LogManager.getLogger(MonteCarloStrategy.class);
 
-    private Random rand = new Random();
-
-    /*private PlayerOrdering order;
+    private PlayerOrdering order;
     private int myId;
-    private int partnerId;*/
+    private int partnerId;
 
     public MonteCarloStrategy() {
         this(ConfigFactory.load());
@@ -35,15 +38,26 @@ public class MonteCarloStrategy implements Strategy {
 
     public MonteCarloStrategy(Config conf) {
         Config config = conf.getConfig("monte-carlo-strategy");
-        this.NUMBER_OF_CARD_DISTRIBUTIONS = config.getInt("NUMBER_OF_CARD_DISTRIBUTIONS");
-        this.NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION = config.getInt("NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION");
+
+        this.NUMBER_OF_CARD_DISTRIBUTIONS_FOR_TRUMPF_REQUEST = config.getInt("NUMBER_OF_CARD_DISTRIBUTIONS_FOR_TRUMPF_REQUEST");
+        this.NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_TRUMPF_REQUEST = config.getInt("NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_TRUMPF_REQUEST");
+        this.MAX_SIMULATION_DEPTH_FOR_TRUMPF_REQUEST = config.getInt("MAX_SIMULATION_DEPTH_FOR_TRUMPF_REQUEST");
+
+        this.NUMBER_OF_CARD_DISTRIBUTIONS_FOR_CARD_REQUEST = config.getInt("NUMBER_OF_CARD_DISTRIBUTIONS_FOR_CARD_REQUEST");
+        this.NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_CARD_REQUEST = config.getInt("NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_CARD_REQUEST");
+        this.MAX_SIMULATION_DEPTH_FOR_CARD_REQUEST = config.getInt("MAX_SIMULATION_DEPTH_FOR_CARD_REQUEST");
     }
 
     @Override
+    public void onSessionStarted(SessionInfo sessionInfo) {
+        this.myId = sessionInfo.getPlayerId();
+        this.order = sessionInfo.getPlayerOrdering();
+        this.partnerId = sessionInfo.getPartnerId();
+    }
+
+
+    @Override
     public Trumpf onRequestTrumpf(GameState state, boolean isGeschoben) {
-        int myId = state.getPlayerId();
-        int partnerId = state.getPartnerId();
-        PlayerOrdering order = state.getPlayerOrdering();
         Set<Card> myCards = state.getMyCards();
 
         Set<Trumpf> trumpfs = new HashSet<>();
@@ -60,31 +74,81 @@ public class MonteCarloStrategy implements Strategy {
         Map<Trumpf, CardEvaluation> evaluation = new HashMap<>();
         for (Trumpf trumpf: trumpfs) {
             evaluation.put(trumpf, new CardEvaluation());
-            for (int i = 0; i < NUMBER_OF_CARD_DISTRIBUTIONS; i++) {
-                CardDistribution cardDistribution = distributeCards(myCards, new ArrayList<>(), EnumSet.noneOf(Card.class), myId, myId, order);
-                for (int j = 0; j < NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION; j++) {
+            for (int i = 0; i < NUMBER_OF_CARD_DISTRIBUTIONS_FOR_TRUMPF_REQUEST; i++) {
+                CardDistribution cardDistribution = distributeCards(myCards, new ArrayList<>(), EnumSet.noneOf(Card.class), myId);
+                for (int j = 0; j < NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_TRUMPF_REQUEST; j++) {
                     CardDistribution cards = new CardDistribution(cardDistribution);
                     int firstPlayer = myId;
                     /*if (isGeschoben) {
                         firstPlayer = partnerId;
                     }*/
-                    evaluation.get(trumpf).add(evaluateCardChoice(cards, trumpf, new ArrayList<>(), firstPlayer, myId, partnerId, order));
+                    evaluation.get(trumpf).add(simulateGame(cards, trumpf, new ArrayList<>(), firstPlayer, MAX_SIMULATION_DEPTH_FOR_TRUMPF_REQUEST));
+                }
+            }
+        }
+
+
+        int maxPoints = evaluation.values().stream().mapToInt(CardEvaluation::getOurPoints).max().getAsInt();
+        Predicate<Trumpf> isMaxValueTrumpf = trumpf -> evaluation.get(trumpf).getOurPoints() == maxPoints;
+        Comparator<Trumpf> compareTheirPoints = (trumpf1, trumpf2) -> Integer.valueOf(evaluation.get(trumpf1).getTheirPoints()).compareTo(evaluation.get(trumpf2).getTheirPoints());
+        Trumpf chosenTrumpf = evaluation.keySet().stream()
+                .filter(isMaxValueTrumpf)
+                .min(compareTheirPoints).get();
+
+        return chosenTrumpf;
+    }
+
+    @Override
+    public Card onRequestCard(GameState state) {
+        Preconditions.checkArgument(state.getCurrentPlayer() == myId);
+
+        Map<Card, CardEvaluation> evaluation = new HashMap<>();
+
+        Set<Card> allowedCards = state.getAllowedCardsToPlay();
+        Set<Card> myCards = state.getMyCards();
+        List<Card> cardsOnTable = state.getCardsOnTable();
+        Set<Card> playedCards = state.getPlayedCards();
+        Trumpf trumpf = state.getTrumpf();
+
+        for (Card card: allowedCards) {
+            evaluation.put(card, new CardEvaluation());
+            for (int i = 0; i < NUMBER_OF_CARD_DISTRIBUTIONS_FOR_CARD_REQUEST; i++) {
+                CardDistribution cardDistribution = distributeCards(myCards, cardsOnTable, playedCards, myId);
+                for (int j = 0; j < NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_CARD_REQUEST; j++) {
+                    CardDistribution cards = new CardDistribution(cardDistribution);
+                    cards.remove(myId, card);
+                    List<Card> newCardsOnTable = new ArrayList<>(state.getCardsOnTable());
+                    newCardsOnTable.add(card);
+                    int nextPlayer = order.getNextPlayerIdFrom(myId);
+                    evaluation.get(card).add(simulateGame(cards, trumpf, newCardsOnTable, nextPlayer, MAX_SIMULATION_DEPTH_FOR_CARD_REQUEST));
                 }
             }
         }
 
         int maxPoints = evaluation.values().stream().mapToInt(CardEvaluation::getOurPoints).max().getAsInt();
-        Trumpf chosenTrumpf = evaluation.keySet().stream()
-                .filter(trumpf -> evaluation.get(trumpf).getOurPoints() == maxPoints)
-                .min((trumpf1, trumpf2) -> Integer.valueOf(evaluation.get(trumpf1).getTheirPoints()).compareTo(evaluation.get(trumpf2).getTheirPoints())).get();
-
-        return chosenTrumpf;
+        Predicate<Map.Entry<Card, CardEvaluation>> isMaxValueCard = entry -> entry.getValue().getOurPoints() == maxPoints;
+        Comparator<Card> compareTheirPoints = (card1, card2) -> Integer.valueOf(evaluation.get(card1).getTheirPoints()).compareTo(evaluation.get(card2).getTheirPoints());
+        Card chosenCard = evaluation.entrySet().stream()
+                .filter(isMaxValueCard)
+                .map(Map.Entry::getKey)
+                .min(compareTheirPoints)
+                .get();
+        return chosenCard;
     }
 
-    private CardDistribution distributeCards(Set<Card> playerCards, List<Card> cardsOnTable, EnumSet<Card> playedCards, int firstPlayerId, int myId, PlayerOrdering order) {
-        EnumSet<Card> myCards = EnumSet.copyOf(playerCards);
-        EnumSet<Card> otherCards =  EnumSet.complementOf(EnumSet.copyOf(myCards));
-        otherCards.removeAll(playedCards);
+    private CardDistribution distributeCards(Set<Card> playerCards, List<Card> cardsOnTable, Set<Card> playedCards, int firstPlayerId) {
+        EnumSet<Card> playedCardsEnumSet;
+        if (playedCards.isEmpty()) {
+            playedCardsEnumSet = EnumSet.noneOf(Card.class);
+        } else {
+            playedCardsEnumSet = EnumSet.copyOf(playedCards);
+        }
+        EnumSet<Card> otherCardsSet =  EnumSet.complementOf(EnumSet.copyOf(playerCards));
+        otherCardsSet.removeAll(playedCardsEnumSet);
+
+        LinkedList<Card> myCards = new LinkedList<>(playerCards);
+        LinkedList<Card> otherCards = new LinkedList<>(otherCardsSet);
+        Collections.shuffle(otherCards);
 
         Preconditions.checkState(myCards.size() + otherCards.size() + playedCards.size() == Card.values().length);
 
@@ -96,10 +160,10 @@ public class MonteCarloStrategy implements Strategy {
             for (int i=0; i < remainingCardsInRound; i++) {
                 Card card;
                 if (currentPlayer == myId) {
-                    card = myCards.iterator().next();
-                    myCards.remove(card);
+                    card = myCards.removeFirst();
+
                 } else {
-                    card = selectAndRemoveRandomCard(otherCards);
+                    card = otherCards.removeFirst();
                 }
                 cards.add(currentPlayer, card);
                 currentPlayer = order.getNextPlayerIdFrom(currentPlayer);
@@ -113,49 +177,26 @@ public class MonteCarloStrategy implements Strategy {
         return cards;
     }
 
-    private static class CardEvaluation {
-        private int ourPoints = 0;
-        private int theirPoints = 0;
-
-        public void addOurPoints(int ourPoints) {
-            this.ourPoints += ourPoints;
-        }
-
-        public void addTheirPoints(int theirPoints) {
-            this.theirPoints += theirPoints;
-        }
-
-        public void add(CardEvaluation that) {
-            this.ourPoints += that.ourPoints;
-            this.theirPoints += that.theirPoints;
-        }
-
-        public int getOurPoints() {
-            return ourPoints;
-        }
-
-        public int getTheirPoints() {
-            return theirPoints;
-        }
-    }
-
-    public CardEvaluation evaluateCardChoice(CardDistribution cards, Trumpf trumpf, List<Card> cardsOnTable, int firstPlayerId, int myId, int partnerId, PlayerOrdering order) {
+    private CardEvaluation simulateGame(CardDistribution cards, Trumpf trumpf, List<Card> cardsOnTable, int firstPlayerId, int maxSimulationDepth) {
         int currentPlayer = firstPlayerId;
         CardEvaluation evaluation = new CardEvaluation();
 
-        while(!cards.isEmpty()) {
+        int iteration = 0;
+
+        while(!cards.isEmpty() && iteration < maxSimulationDepth) {
             // simulate one round
             while(cardsOnTable.size() < Stich.STICH_SIZE) {
-                EnumSet<Card> allowedCards = EnumSet.copyOf(AllowedCardsRules.getFor(cards.get(currentPlayer), trumpf, cardsOnTable).get());
+                LinkedList<Card> allowedCards = new LinkedList<>(AllowedCardsRules.getFor(cards.get(currentPlayer), trumpf, cardsOnTable).get());
+                Collections.shuffle(allowedCards);
+                Card card = allowedCards.getFirst();
 
-                Card card = selectRandomCard(allowedCards);
-                cards.get(currentPlayer).remove(card);
+                cards.remove(currentPlayer, card);
                 cardsOnTable.add(card);
                 currentPlayer = order.getNextPlayerIdFrom(currentPlayer);
             }
 
             // find winner and award points
-            Card winningCard = cardsOnTable.stream().max(trumpf.getComparator()).get();
+            Card winningCard = trumpf.getWinningCard(cardsOnTable);
             int winningCardIndex = cardsOnTable.indexOf(winningCard);
             int winningPlayerId = order.getPlayerIdFrom(currentPlayer, winningCardIndex);
             int points = trumpf.getValueOf(cardsOnTable);
@@ -168,63 +209,9 @@ public class MonteCarloStrategy implements Strategy {
             // start next round
             currentPlayer = winningPlayerId;
             cardsOnTable.clear();
+            iteration++;
         }
         return evaluation;
-    }
-
-    @Override
-    public Card onRequestCard(GameState state) {
-        int myId = state.getPlayerId();
-        int partnerId = state.getPartnerId();
-        PlayerOrdering order = state.getPlayerOrdering();
-
-        Preconditions.checkArgument(state.getCurrentPlayer() == myId);
-
-        Map<Card, CardEvaluation> evaluation = new HashMap<>();
-
-        Set<Card> allowedCards = state.getAllowedCardsToPlay();
-        Set<Card> playedCards = state.getPlayedCards();
-        EnumSet<Card> playedCardsEnumSet;
-        if (playedCards.isEmpty()) {
-            playedCardsEnumSet = EnumSet.noneOf(Card.class);
-        } else {
-            playedCardsEnumSet = EnumSet.copyOf(playedCards);
-        }
-
-
-        for (Card card: allowedCards) {
-            evaluation.put(card, new CardEvaluation());
-            for (int i = 0; i < NUMBER_OF_CARD_DISTRIBUTIONS; i++) {
-                CardDistribution cardDistribution = distributeCards(state.getMyCards(), state.getCardsOnTable(), playedCardsEnumSet, state.getCurrentPlayer(), myId, order);
-                for (int j = 0; j < NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION; j++) {
-                    CardDistribution cards = new CardDistribution(cardDistribution);
-                    cards.get(myId).remove(card);
-                    List<Card> cardsOnTable = new ArrayList<>(state.getCardsOnTable());
-                    cardsOnTable.add(card);
-                    int nextPlayer = order.getNextPlayerIdFrom(myId);
-                    evaluation.get(card).add(evaluateCardChoice(cards, state.getTrumpf(), cardsOnTable, nextPlayer, myId, partnerId, order));
-                }
-            }
-        }
-
-        int maxPoints = evaluation.values().stream().mapToInt(CardEvaluation::getOurPoints).max().getAsInt();
-        Card chosenCard = evaluation.entrySet().stream().filter(entry -> entry.getValue().getOurPoints() == maxPoints).map(Map.Entry::getKey)
-                .min((trumpf1, trumpf2) -> Integer.valueOf(evaluation.get(trumpf1).getTheirPoints()).compareTo(evaluation.get(trumpf2).getTheirPoints())).get();
-
-        return chosenCard;
-    }
-
-    private Card selectRandomCard(EnumSet<Card> cards) {
-        int index = rand.nextInt(cards.size());
-        Card card = new ArrayList<>(cards).get(index);
-        return card;
-    }
-
-    private Card selectAndRemoveRandomCard(EnumSet<Card> cards) {
-        // TODO: Any elegant way for random selection from enum set?
-        Card card = selectRandomCard(cards);
-        cards.remove(card);
-        return card;
     }
 
 }
