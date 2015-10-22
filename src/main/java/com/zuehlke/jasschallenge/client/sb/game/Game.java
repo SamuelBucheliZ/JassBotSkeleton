@@ -23,6 +23,7 @@ import java.util.*;
 
 public class Game {
     private static final Logger logger = LogManager.getLogger(Game.class);
+    public static final int NUMBER_OF_ROUNDS = 9;
 
     private final SessionInfo sessionInfo;
     private final Strategy strategy;
@@ -39,7 +40,7 @@ public class Game {
     public void joinSession(Player player) {
         /*
          * The first SessionJoined message a player receives is guaranteed to contain the player's own id.
-         * Note that player ids get reassigned in every new session in tournament mode, thus, the player
+         * Note that player ids getOrCreateChild reassigned in every new session in tournament mode, thus, the player
          * id needs to be reset at finish session.
          */
         if (!sessionInfo.playerIdIsPresent()) {
@@ -91,7 +92,7 @@ public class Game {
         long startTime = System.nanoTime();
         Trumpf trumpf = strategy.onRequestTrumpf(state, isGeschoben);
         long endTime = System.nanoTime();
-        logger.debug("{}: Choosing trumpf {} took {} milliseconds.", sessionInfo.getLocalPlayerName(), trumpf, (endTime-startTime)/1000000);
+        logger.debug("{}: Choosing trumpf {} took {} milliseconds with strategy {}.", sessionInfo.getLocalPlayerName(), trumpf, (endTime-startTime)/1000000);
 
         // safeguard against illegal choice of trumpf mode SCHIEBE
         if (isGeschoben && TrumpfMode.SCHIEBE.equals(trumpf.getMode())) {
@@ -101,9 +102,16 @@ public class Game {
             trumpf = validTrumpfs.get(index);
         }
 
-        logger.info("{}: Choosing trumpf {} with cards {}.", sessionInfo.getLocalPlayerName(), trumpf, state.getMyCards());
+        logger.info("{}: Choosing trumpf {} with cards {} using {}.", sessionInfo.getLocalPlayerName(), trumpf, state.getMyCards(), strategy.getClass().getSimpleName());
 
         return trumpf;
+    }
+
+    private Card chooseRandomCard(Set<Card> cards) {
+        int index = new java.util.Random().nextInt(cards.size());
+        previousCardChoiceRejected = false;
+        Card card = (new ArrayList<>(cards)).get(index);
+        return card;
     }
 
     public Card requestCard(List<Card> cardsOnTable) {
@@ -112,21 +120,30 @@ public class Game {
         state.setCurrentPlayer(sessionInfo.getPlayerId());
         logger.debug("{}: Received card request, setting current player to {}.", sessionInfo.getLocalPlayerName(), state.getCurrentPlayer());
 
+
         // safeguard against strategies repeatedly selecting invalid cards, thereby effectively blocking the game
         if (previousCardChoiceRejected) {
-            logger.warn("{}: The card previously selected by strategy {} was rejected, choosing random card instead.", sessionInfo.getLocalPlayerName(), strategy);
-            Set<Card> allowedCards = state.getAllowedCardsToPlay();
-            int index = new java.util.Random().nextInt(allowedCards.size());
-            previousCardChoiceRejected = false;
-            return (new ArrayList<>(allowedCards)).get(index);
+            logger.warn("{}: The card previously selected by strategy {} was rejected, choosing random card instead.", sessionInfo.getLocalPlayerName(), strategy.getClass().getSimpleName());
+            Card card = chooseRandomCard(state.getAllowedCardsToPlay());
+            state.doPlay(card);
+            return card;
         }
 
-        long startTime = System.nanoTime();
-        Card card = strategy.onRequestCard(state);
-        long endTime = System.nanoTime();
-        logger.debug("{}: Choosing card {} took {} milliseconds.", sessionInfo.getLocalPlayerName(), card, (endTime-startTime)/1000000);
+        Card card;
+        try {
+            long startTime = System.nanoTime();
+            card = strategy.onRequestCard(state);
+            long endTime = System.nanoTime();
+            logger.info("{}: Choosing card {} from cards {} using strategy {}.", sessionInfo.getLocalPlayerName(), card, state.getMyCards(), strategy.getClass().getSimpleName());
+            logger.debug("{}: Choosing card {} took {} milliseconds.", sessionInfo.getLocalPlayerName(), card, (endTime - startTime) / 1000000);
+            state.doPlay(card);
+        } catch (Exception e) {
+            logger.error(String.format("%s: Strategy failed when choosing card, choosing random card instead.", sessionInfo.getLocalPlayerName()), e);
+            card = chooseRandomCard(state.getAllowedCardsToPlay());
+            logger.info("{}: Choosing card {} from cards {}.", sessionInfo.getLocalPlayerName(), card, state.getMyCards());
+            state.doPlay(card);
+        }
 
-        state.doPlay(card);
         return card;
     }
 
@@ -147,7 +164,9 @@ public class Game {
     }
 
     public void stichMade(Stich stich) {
-        logger.debug("{}: {}", sessionInfo.getLocalPlayerName(), stich.toString());
+        if (stich.getPlayerId() == this.sessionInfo.getPlayerId()) {
+            logger.info("{}: {}", sessionInfo.getLocalPlayerName(), stich.toString());
+        }
         state.startNextRound(stich);
     }
 

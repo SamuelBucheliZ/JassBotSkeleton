@@ -39,7 +39,10 @@ public class JassBotPlayer {
 
     // use custom configuration
     public JassBotPlayer(Config conf, CountDownLatch countDown, int playerID, Strategy strategy) {
-        Config config = conf.getConfig("bot-player");
+        Config config = ConfigFactory.defaultOverrides()
+                .withFallback(conf)
+                .withFallback(ConfigFactory.load())
+                .getConfig("bot-player");
         this.SERVER_URI = config.getString("SERVER_URI");
         this.SESSION_NAME = config.getString("SESSION_NAME");
         this.BOT_NAME_PREFIX = config.getString("BOT_NAME_PREFIX");
@@ -53,7 +56,7 @@ public class JassBotPlayer {
         if (APPEND_UUID_TO_BOT_NAME) {
             remotePlayerName += ":" + UUID.randomUUID().hashCode();
         }
-        logger.info("Creating bot player {} for session {}.", remotePlayerName, SESSION_NAME);
+        logger.info("{}: Creating bot player {} for session {} (choice={}, type={}) at {}.", localPlayerName, remotePlayerName, SESSION_NAME, SESSION_CHOICE, SESSION_TYPE, SERVER_URI);
 
         Game game = new Game(remotePlayerName, localPlayerName, SESSION_NAME, SESSION_CHOICE, SESSION_TYPE, strategy);
 

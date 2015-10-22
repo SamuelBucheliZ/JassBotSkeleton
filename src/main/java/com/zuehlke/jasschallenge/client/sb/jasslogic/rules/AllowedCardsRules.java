@@ -4,6 +4,7 @@ import com.zuehlke.jasschallenge.client.sb.game.GameState;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -12,7 +13,7 @@ public class AllowedCardsRules {
         return getFor(gameState.getMyCards(), gameState.getTrumpf(), gameState.getCardsOnTable());
     }
 
-    public static AllowedCards getFor(Set<Card> playerCards, Trumpf trumpf, List<Card> cardsOnTable) {
+    public static AllowedCards getFor(Collection<Card> playerCards, Trumpf trumpf, List<Card> cardsOnTable) {
         if (thereAreNoCardsOnTheTable(cardsOnTable)) {
             return new NoCardsPlayedYet(playerCards, trumpf, cardsOnTable);
         }

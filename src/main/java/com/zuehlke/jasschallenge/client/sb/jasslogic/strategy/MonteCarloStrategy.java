@@ -37,7 +37,10 @@ public class MonteCarloStrategy implements Strategy {
     }
 
     public MonteCarloStrategy(Config conf) {
-        Config config = conf.getConfig("monte-carlo-strategy");
+        Config config = ConfigFactory.defaultOverrides()
+                .withFallback(conf)
+                .withFallback(ConfigFactory.load())
+                .getConfig("monte-carlo-strategy");
 
         this.NUMBER_OF_CARD_DISTRIBUTIONS_FOR_TRUMPF_REQUEST = config.getInt("NUMBER_OF_CARD_DISTRIBUTIONS_FOR_TRUMPF_REQUEST");
         this.NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_TRUMPF_REQUEST = config.getInt("NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_TRUMPF_REQUEST");
@@ -66,14 +69,14 @@ public class MonteCarloStrategy implements Strategy {
         }
         trumpfs.add(new TrumpfObeabe());
         trumpfs.add(new TrumpfUndeufe());
-        // TODO: also evaluate TrumpfMode SCHIEBE
+        // TODO: also rollOut TrumpfMode SCHIEBE
         /*if (!isGeschoben) {
             trumpfs.add(new TrumpfSchiebe());
         }*/
 
-        Map<Trumpf, CardEvaluation> evaluation = new HashMap<>();
+        Map<Trumpf, PointsCounter> evaluation = new HashMap<>();
         for (Trumpf trumpf: trumpfs) {
-            evaluation.put(trumpf, new CardEvaluation());
+            evaluation.put(trumpf, new PointsCounter());
             for (int i = 0; i < NUMBER_OF_CARD_DISTRIBUTIONS_FOR_TRUMPF_REQUEST; i++) {
                 CardDistribution cardDistribution = distributeCards(myCards, new ArrayList<>(), EnumSet.noneOf(Card.class), myId);
                 for (int j = 0; j < NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_TRUMPF_REQUEST; j++) {
@@ -88,7 +91,7 @@ public class MonteCarloStrategy implements Strategy {
         }
 
 
-        int maxPoints = evaluation.values().stream().mapToInt(CardEvaluation::getOurPoints).max().getAsInt();
+        int maxPoints = evaluation.values().stream().mapToInt(PointsCounter::getOurPoints).max().getAsInt();
         Predicate<Trumpf> isMaxValueTrumpf = trumpf -> evaluation.get(trumpf).getOurPoints() == maxPoints;
         Comparator<Trumpf> compareTheirPoints = (trumpf1, trumpf2) -> Integer.valueOf(evaluation.get(trumpf1).getTheirPoints()).compareTo(evaluation.get(trumpf2).getTheirPoints());
         Trumpf chosenTrumpf = evaluation.keySet().stream()
@@ -102,7 +105,7 @@ public class MonteCarloStrategy implements Strategy {
     public Card onRequestCard(GameState state) {
         Preconditions.checkArgument(state.getCurrentPlayer() == myId);
 
-        Map<Card, CardEvaluation> evaluation = new HashMap<>();
+        Map<Card, PointsCounter> evaluation = new HashMap<>();
 
         Set<Card> allowedCards = state.getAllowedCardsToPlay();
         Set<Card> myCards = state.getMyCards();
@@ -111,7 +114,7 @@ public class MonteCarloStrategy implements Strategy {
         Trumpf trumpf = state.getTrumpf();
 
         for (Card card: allowedCards) {
-            evaluation.put(card, new CardEvaluation());
+            evaluation.put(card, new PointsCounter());
             for (int i = 0; i < NUMBER_OF_CARD_DISTRIBUTIONS_FOR_CARD_REQUEST; i++) {
                 CardDistribution cardDistribution = distributeCards(myCards, cardsOnTable, playedCards, myId);
                 for (int j = 0; j < NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_CARD_REQUEST; j++) {
@@ -125,8 +128,8 @@ public class MonteCarloStrategy implements Strategy {
             }
         }
 
-        int maxPoints = evaluation.values().stream().mapToInt(CardEvaluation::getOurPoints).max().getAsInt();
-        Predicate<Map.Entry<Card, CardEvaluation>> isMaxValueCard = entry -> entry.getValue().getOurPoints() == maxPoints;
+        int maxPoints = evaluation.values().stream().mapToInt(PointsCounter::getOurPoints).max().getAsInt();
+        Predicate<Map.Entry<Card, PointsCounter>> isMaxValueCard = entry -> entry.getValue().getOurPoints() == maxPoints;
         Comparator<Card> compareTheirPoints = (card1, card2) -> Integer.valueOf(evaluation.get(card1).getTheirPoints()).compareTo(evaluation.get(card2).getTheirPoints());
         Card chosenCard = evaluation.entrySet().stream()
                 .filter(isMaxValueCard)
@@ -177,9 +180,9 @@ public class MonteCarloStrategy implements Strategy {
         return cards;
     }
 
-    private CardEvaluation simulateGame(CardDistribution cards, Trumpf trumpf, List<Card> cardsOnTable, int firstPlayerId, int maxSimulationDepth) {
+    private PointsCounter simulateGame(CardDistribution cards, Trumpf trumpf, List<Card> cardsOnTable, int firstPlayerId, int maxSimulationDepth) {
         int currentPlayer = firstPlayerId;
-        CardEvaluation evaluation = new CardEvaluation();
+        PointsCounter evaluation = new PointsCounter();
 
         int iteration = 0;
 

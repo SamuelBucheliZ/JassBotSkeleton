@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 public class FirstCardIsNotTrumpfButTrumpfOnTable extends AllowedCards {
 
-    FirstCardIsNotTrumpfButTrumpfOnTable(Set<Card> playerCards, Trumpf trumpf, List<Card> cardsOnTable) {
+    FirstCardIsNotTrumpfButTrumpfOnTable(Collection<Card> playerCards, Trumpf trumpf, List<Card> cardsOnTable) {
         super(playerCards, trumpf, cardsOnTable);
     }
 

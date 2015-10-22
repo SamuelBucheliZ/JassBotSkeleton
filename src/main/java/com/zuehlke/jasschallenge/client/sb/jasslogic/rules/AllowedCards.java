@@ -15,13 +15,13 @@ public abstract class AllowedCards {
         return cardStream.collect(Collectors.toSet());
     }
 
-    private final Set<Card> playerCards;
+    private final Collection<Card> playerCards;
     private final Trumpf trumpf;
     private final List<Card> cardsOnTable;
 
     private final Map<Boolean, Set<Card>> trumpfPartition;
 
-    AllowedCards(Set<Card> playerCards, Trumpf trumpf, List<Card> cardsOnTable) {
+    AllowedCards(Collection<Card> playerCards, Trumpf trumpf, List<Card> cardsOnTable) {
         this.playerCards = playerCards;
         this.trumpf = trumpf;
         this.cardsOnTable = cardsOnTable;
@@ -70,6 +70,6 @@ public abstract class AllowedCards {
     }
 
     Set<Card> getPlayerCards() {
-        return Collections.unmodifiableSet(playerCards);
+        return playerCards.stream().collect(Collectors.toSet());
     }
 }

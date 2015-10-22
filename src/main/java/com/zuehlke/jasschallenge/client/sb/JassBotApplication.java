@@ -2,13 +2,9 @@ package com.zuehlke.jasschallenge.client.sb;
 
 import java.util.concurrent.CountDownLatch;
 
-import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.StrategyRepository;
+import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.MonteCarloStrategy;
-import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.RandomStrategy;
-import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.Strategy;
 
 /**
  * This is a Jass (swiss card game) bot implementation that plays the game
@@ -33,8 +29,9 @@ public class JassBotApplication {
 
             for(int i = 0; i < NUMBER_OF_BOT_PLAYERS; i++) {
                 Strategy strategy;
-                if (i % 2 == 0) {
-                    strategy = StrategyRepository.getStrategy("MonteCarloStrategy");
+                if (i < 2) {
+                    strategy = StrategyRepository.getStrategy("IterationLimitedMCTSStrategy");
+                    //strategy = StrategyRepository.getStrategy("MonteCarloStrategy");
                 } else {
                     strategy = StrategyRepository.getStrategy("RandomStrategy");
                 }

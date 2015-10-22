@@ -74,11 +74,6 @@ public enum Card {
         return values.get(suit).get(cardNumber);
     }
 
-    /*@Override
-    public String toString() {
-        return suit.getUnicodeCharacter() + " " + cardNumber.getNumber();
-    }*/
-
     public CardNumber getCardNumber() { return cardNumber; }
 
     public int getNumber() { return cardNumber.getNumber(); }
@@ -93,6 +88,11 @@ public enum Card {
 
     public boolean isTrumpf(Trumpf trumpf) {
         return trumpf.getMode().equals(TrumpfMode.TRUMPF) && suit.equals(trumpf.getSuit());
+    }
+
+    @Override
+    public String toString() {
+        return suit.getUnicodeCharacter() + " " + cardNumber.getNumber();
     }
 
 }

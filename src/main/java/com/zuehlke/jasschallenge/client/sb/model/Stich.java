@@ -10,6 +10,7 @@ import java.util.List;
 
 public class Stich {
     public static final int STICH_SIZE = 4;
+    public static final int LAST_STICH_POINTS = 5;
 
     @SerializedName("name")
     private final String playerName;

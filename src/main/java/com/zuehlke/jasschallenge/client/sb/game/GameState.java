@@ -65,6 +65,11 @@ public class GameState {
         }
     }
 
+    public Move getLastMove() {
+        int lastIndex = this.moves.size()-1;
+        return this.moves.get(lastIndex);
+    }
+
     public void startNextRound(Stich lastStich) {
         Preconditions.checkState(cardsOnTable.size() == Stich.STICH_SIZE);
         cardsOnTable.clear();
@@ -114,4 +119,7 @@ public class GameState {
         return String.format("GameState{myCards=%s, trumpf=%s, cardsOnTable=%s, round=%d}", myCards, trumpf, cardsOnTable, round);
     }
 
+    public boolean isLastRound() {
+        return this.round == Game.NUMBER_OF_ROUNDS;
+    }
 }

@@ -33,8 +33,7 @@ public class JassBotTournamentTeam {
                 // override default configuration with custom configuration
                 Config config = ConfigFactory.defaultOverrides()
                         .withValue("bot-player.BOT_NAME_PREFIX", ConfigValueFactory.fromAnyRef(teamName))
-                        .withFallback(ConfigFactory.load().getConfig("jass-bot-tournament-team"))
-                        .withFallback(ConfigFactory.load());
+                        .withFallback(ConfigFactory.load().getConfig("jass-bot-tournament-team"));
 
                 for (int i = 0; i < Team.TEAM_SIZE; i++) {
                     Config teamConfig = tournamentConfig.getConfig(teamName);
