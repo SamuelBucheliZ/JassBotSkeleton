@@ -3,7 +3,7 @@ package com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.mcts;
 import com.zuehlke.jasschallenge.client.sb.game.GameState;
 import com.zuehlke.jasschallenge.client.sb.game.SessionInfo;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.rules.AllowedCardsRules;
-import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.PointsCounter;
+import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.common.PointsCounter;
 import com.zuehlke.jasschallenge.client.sb.model.Stich;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;

@@ -54,7 +54,6 @@ public abstract class MCTSStrategy implements Strategy {
 
     @Override
     public Trumpf onRequestTrumpf(GameState state, boolean isGeschoben) {
-
         TrumpfNode trumpfRoot = new TrumpfNode(state, sessionInfo);
 
         searchTrumpf(trumpfRoot);
@@ -71,6 +70,7 @@ public abstract class MCTSStrategy implements Strategy {
 
     @Override
     public Card onRequestCard(GameState state) {
+        // simulation is futile if there's exactly one card left to play...
         if (state.isLastRound()) {
             return state.getMyCards().stream().findAny().get();
         }

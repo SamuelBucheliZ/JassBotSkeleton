@@ -6,6 +6,7 @@ import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.Trumpf;
 import com.zuehlke.jasschallenge.client.sb.model.trumpf.TrumpfMode;
 
+import java.util.Collection;
 import java.util.Random;
 import java.util.Set;
 
@@ -17,17 +18,11 @@ public class RandomStrategy implements Strategy {
 
     @Override
     public Trumpf onRequestTrumpf(GameState state, boolean isGeschoben) {
-        TrumpfMode mode;
-        do {
-            mode = chooseRandomly(TrumpfMode.values());
-        } while(TrumpfMode.SCHIEBE.equals(mode));
+        Trumpf trumpf;
         // TODO: ignore SCHIEBE for now
-        //} while(isGeschoben && TrumpfMode.SCHIEBE.equals(mode));
-        Suit suit = null;
-        if (TrumpfMode.TRUMPF.equals(mode)) {
-            suit = chooseRandomly(Suit.values());
-        }
-        return Trumpf.from(mode, suit);
+        Collection<Trumpf> allTrumpfsWithoutSchiebe = Trumpf.getAllTrumpfsWithoutSchiebe();
+        trumpf = chooseRandomly(allTrumpfsWithoutSchiebe.toArray(new Trumpf[allTrumpfsWithoutSchiebe.size()]));
+        return trumpf;
     }
 
     @Override

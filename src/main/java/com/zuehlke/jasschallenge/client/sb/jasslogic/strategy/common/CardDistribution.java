@@ -1,4 +1,4 @@
-package com.zuehlke.jasschallenge.client.sb.jasslogic.strategy;
+package com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.common;
 
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 

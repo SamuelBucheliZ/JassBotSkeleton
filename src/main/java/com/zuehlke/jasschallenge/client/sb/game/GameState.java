@@ -102,18 +102,6 @@ public class GameState {
         return round;
     }
 
-    public int getPlayerId() {
-        return sessionInfo.getPlayerId();
-    }
-
-    public int getPartnerId() {
-        return sessionInfo.getPartnerId();
-    }
-
-    public PlayerOrdering getPlayerOrdering() {
-        return sessionInfo.getPlayerOrdering();
-    }
-
     @Override
     public String toString() {
         return String.format("GameState{myCards=%s, trumpf=%s, cardsOnTable=%s, round=%d}", myCards, trumpf, cardsOnTable, round);

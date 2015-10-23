@@ -31,7 +31,7 @@ public class JassBotApplication {
                 Strategy strategy;
                 if (i < 2) {
                     strategy = StrategyRepository.getStrategy("IterationLimitedMCTSStrategy");
-                    //strategy = StrategyRepository.getStrategy("MonteCarloStrategy");
+                    //strategy = StrategyRepository.getStrategy("SimpleMonteCarloStrategy");
                 } else {
                     strategy = StrategyRepository.getStrategy("RandomStrategy");
                 }

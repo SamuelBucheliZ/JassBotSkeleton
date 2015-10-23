@@ -3,7 +3,6 @@ package com.zuehlke.jasschallenge.client.sb;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
-import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.MonteCarloStrategy;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.Strategy;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.StrategyRepository;
 import com.zuehlke.jasschallenge.client.sb.model.Team;

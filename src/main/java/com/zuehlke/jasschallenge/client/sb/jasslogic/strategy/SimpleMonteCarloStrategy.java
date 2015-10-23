@@ -7,6 +7,8 @@ import com.zuehlke.jasschallenge.client.sb.game.GameState;
 import com.zuehlke.jasschallenge.client.sb.game.PlayerOrdering;
 import com.zuehlke.jasschallenge.client.sb.game.SessionInfo;
 import com.zuehlke.jasschallenge.client.sb.jasslogic.rules.AllowedCardsRules;
+import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.common.CardDistribution;
+import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.common.PointsCounter;
 import com.zuehlke.jasschallenge.client.sb.model.Stich;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
@@ -17,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.*;
 import java.util.function.Predicate;
 
-public class MonteCarloStrategy implements Strategy {
+public class SimpleMonteCarloStrategy implements Strategy {
     private final int NUMBER_OF_CARD_DISTRIBUTIONS_FOR_TRUMPF_REQUEST;
     private final int NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_TRUMPF_REQUEST;
     private final int MAX_SIMULATION_DEPTH_FOR_TRUMPF_REQUEST;
@@ -26,21 +28,21 @@ public class MonteCarloStrategy implements Strategy {
     private final int NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_CARD_REQUEST;
     private final int MAX_SIMULATION_DEPTH_FOR_CARD_REQUEST;
 
-    private static final Logger logger = LogManager.getLogger(MonteCarloStrategy.class);
+    private static final Logger logger = LogManager.getLogger(SimpleMonteCarloStrategy.class);
 
     private PlayerOrdering order;
     private int myId;
     private int partnerId;
 
-    public MonteCarloStrategy() {
+    public SimpleMonteCarloStrategy() {
         this(ConfigFactory.load());
     }
 
-    public MonteCarloStrategy(Config conf) {
+    public SimpleMonteCarloStrategy(Config conf) {
         Config config = ConfigFactory.defaultOverrides()
                 .withFallback(conf)
                 .withFallback(ConfigFactory.load())
-                .getConfig("monte-carlo-strategy");
+                .getConfig("simple-monte-carlo-strategy");
 
         this.NUMBER_OF_CARD_DISTRIBUTIONS_FOR_TRUMPF_REQUEST = config.getInt("NUMBER_OF_CARD_DISTRIBUTIONS_FOR_TRUMPF_REQUEST");
         this.NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_TRUMPF_REQUEST = config.getInt("NUMBER_OF_EVALUATIONS_PER_CARD_DISTRIBUTION_FOR_TRUMPF_REQUEST");
@@ -69,7 +71,7 @@ public class MonteCarloStrategy implements Strategy {
         }
         trumpfs.add(new TrumpfObeabe());
         trumpfs.add(new TrumpfUndeufe());
-        // TODO: also rollOut TrumpfMode SCHIEBE
+        // TODO: also handle TrumpfMode SCHIEBE
         /*if (!isGeschoben) {
             trumpfs.add(new TrumpfSchiebe());
         }*/

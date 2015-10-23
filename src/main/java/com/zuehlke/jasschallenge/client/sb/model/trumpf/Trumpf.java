@@ -5,10 +5,7 @@ import com.google.gson.annotations.SerializedName;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Card;
 import com.zuehlke.jasschallenge.client.sb.model.cards.Suit;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public abstract class Trumpf {
     public static Trumpf from(TrumpfMode mode, Suit suit) {
@@ -43,6 +40,16 @@ public abstract class Trumpf {
 
     public static Trumpf from(Suit suit) {
         return from(TrumpfMode.TRUMPF, suit);
+    }
+
+    public static Collection<Trumpf> getAllTrumpfsWithoutSchiebe() {
+        Set<Trumpf> trumpfs =new HashSet<>();
+        trumpfs.add(new TrumpfUndeufe());
+        trumpfs.add(new TrumpfObeabe());
+        for (Suit suit: Suit.values()) {
+            trumpfs.add(new TrumpfSuit(suit));
+        }
+        return trumpfs;
     }
 
     private final TrumpfMode mode;

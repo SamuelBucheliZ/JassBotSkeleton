@@ -1,6 +1,6 @@
 package com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.mcts;
 
-import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.PointsCounter;
+import com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.common.PointsCounter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,8 +16,8 @@ public abstract class TreeNode<T> {
     static Random rand = new Random();
     static double epsilon = 1e-6;
 
-    public static void search(TreeNode root) {
-        TreeNode current = root;
+    public static void search(TreeNode<?> root) {
+        TreeNode<?> current = root;
 
         // Select
         while (!current.isTerminal()) {
@@ -39,14 +39,14 @@ public abstract class TreeNode<T> {
         }
     }
 
-    private WeakReference<TreeNode> parent;
+    private WeakReference<TreeNode<?>> parent;
     private Set<T> untriedMoves;
-    private Map<T, CardNode> children;
+    private Map<T, TreeNode<?>> children;
     private int numberOfVisits;
     private int numberOfWins;
     private int points;
 
-    TreeNode(TreeNode parent, Collection<T> untriedMoves) {
+    TreeNode(TreeNode<?> parent, Collection<T> untriedMoves) {
         this.parent = new WeakReference<>(parent);
         this.untriedMoves = new HashSet<>();
         this.untriedMoves.addAll(untriedMoves);
@@ -57,25 +57,25 @@ public abstract class TreeNode<T> {
 
     public abstract PointsCounter rollOut();
 
-    protected abstract CardNode createChild(T move);
+    protected abstract TreeNode<?> createChild(T move);
 
     public abstract boolean isTerminal();
 
-    public CardNode bestChild(double explorationFactor) {
+    public TreeNode<?> bestChild(double explorationFactor) {
         int totalNumberOfVisits = this.getNumberOfVisits();
         double totalVisitFactor = totalNumberOfVisits == 0 ? Double.POSITIVE_INFINITY : Math.log(totalNumberOfVisits); // avoid troubles with Math.log(0) and give unvisited nodes very high priority
         double pointsPerGame = PointsCounter.POINTS_PER_GAME; // remember that double division is required in exploitation, else the result will be int
-        Function<CardNode, Double> getUCT =
+        Function<TreeNode<?>, Double> getUCT =
                 node ->  node.getPoints() / (node.getNumberOfVisits() * pointsPerGame) // exploitation -> game theoretic value of node, normalized to [0,1]
                         + explorationFactor * Math.sqrt(totalVisitFactor / node.getNumberOfVisits()) // exploration -> is bigger if node has not been visited often
                         + rand.nextDouble() * epsilon; // randomly break ties
-        Comparator<CardNode> compareByValue =
+        Comparator<TreeNode<?>> compareByValue =
                 (first, second) -> getUCT.apply(first).compareTo(getUCT.apply(second));
-        CardNode selected = children.values().stream().max(compareByValue).get();
+        TreeNode<?> selected = children.values().stream().max(compareByValue).get();
         return selected;
     }
 
-    public CardNode expand() {
+    public TreeNode<?> expand() {
         T move = selectRandomUntriedMove();
         return this.expandWith(move);
     }
@@ -102,7 +102,7 @@ public abstract class TreeNode<T> {
         // ---
 
         final int ignoreExploration = 0;
-        TreeNode child = bestChild(ignoreExploration);
+        TreeNode<?> child = bestChild(ignoreExploration);
         T move = children.entrySet().stream().filter(e -> e.getValue() == child).findAny().get().getKey();
         return move;
     }
@@ -115,8 +115,8 @@ public abstract class TreeNode<T> {
         }
     }
 
-    private CardNode expandWith(T move) {
-        CardNode child = createChild(move);
+    private TreeNode<?> expandWith(T move) {
+        TreeNode<?> child = createChild(move);
         addChild(move, child);
         return child;
     }
@@ -129,7 +129,7 @@ public abstract class TreeNode<T> {
         parent.clear();
     }
 
-    public TreeNode getParent() {
+    public TreeNode<?> getParent() {
         return parent.get();
     }
 
@@ -157,11 +157,11 @@ public abstract class TreeNode<T> {
         return points;
     }
 
-    public void addChild(T move, CardNode child) {
+    public void addChild(T move, TreeNode<?> child) {
         children.put(move, child);
     }
 
-    public CardNode getOrCreateChild(T move) {
+    public TreeNode<?> getOrCreateChild(T move) {
         if (this.children.containsKey(move)) {
             return this.children.get(move);
         } else {

@@ -1,4 +1,4 @@
-package com.zuehlke.jasschallenge.client.sb.jasslogic.strategy;
+package com.zuehlke.jasschallenge.client.sb.jasslogic.strategy.common;
 
 public class PointsCounter {
     public static final int POINTS_PER_GAME = 157;
