@@ -11,10 +11,10 @@ import java.util.function.Function;
 public abstract class TreeNode<T> {
     private static final Logger logger = LogManager.getLogger(TreeNode.class);
 
-    private static double EXPLORATION = Math.sqrt(2);
+    private static double EXPLORATION_FACTOR = 1/Math.sqrt(2);
+    private static double EPSILON = 1e-6;
 
-    static Random rand = new Random();
-    static double epsilon = 1e-6;
+    private static Random rand = new Random();
 
     public static void search(TreeNode<?> root) {
         TreeNode<?> current = root;
@@ -25,7 +25,7 @@ public abstract class TreeNode<T> {
                 current = current.expand();
                 break;
             } else {
-                current = current.bestChild(EXPLORATION);
+                current = current.bestChild(EXPLORATION_FACTOR);
             }
         }
 
@@ -63,12 +63,12 @@ public abstract class TreeNode<T> {
 
     public TreeNode<?> bestChild(double explorationFactor) {
         int totalNumberOfVisits = this.getNumberOfVisits();
-        double totalVisitFactor = totalNumberOfVisits == 0 ? Double.POSITIVE_INFINITY : Math.log(totalNumberOfVisits); // avoid troubles with Math.log(0) and give unvisited nodes very high priority
+        double totalVisitFactor = totalNumberOfVisits == 0 ? Double.POSITIVE_INFINITY : 2*Math.log(totalNumberOfVisits); // avoid troubles with Math.log(0) and give unvisited nodes very high priority
         double pointsPerGame = PointsCounter.POINTS_PER_GAME; // remember that double division is required in exploitation, else the result will be int
         Function<TreeNode<?>, Double> getUCT =
                 node ->  node.getPoints() / (node.getNumberOfVisits() * pointsPerGame) // exploitation -> game theoretic value of node, normalized to [0,1]
                         + explorationFactor * Math.sqrt(totalVisitFactor / node.getNumberOfVisits()) // exploration -> is bigger if node has not been visited often
-                        + rand.nextDouble() * epsilon; // randomly break ties
+                        + rand.nextDouble() * EPSILON; // randomly break ties
         Comparator<TreeNode<?>> compareByValue =
                 (first, second) -> getUCT.apply(first).compareTo(getUCT.apply(second));
         TreeNode<?> selected = children.values().stream().max(compareByValue).get();
